@@ -11,6 +11,10 @@ function getMetaImage(html) {
   return null;
 }
 
+function isGenericImage(image) {
+  return /google\.(com|ca)|googleusercontent|gstatic|googlelogo|google-news|favicon|logo\.svg|spacer\.gif/i.test(image);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
@@ -21,7 +25,9 @@ export default async function handler(req, res) {
     const response = await fetch(sourceUrl, { headers: { 'User-Agent': 'Sentinelle image preview' } });
     if (!response.ok) return res.status(404).json({ image: null });
     const image = getMetaImage(await response.text());
-    return res.status(image ? 200 : 404).json({ image: image ? new URL(image, sourceUrl).href : null });
+    const absoluteImage = image ? new URL(image, sourceUrl).href : null;
+    if (!absoluteImage || isGenericImage(absoluteImage)) return res.status(404).json({ image: null });
+    return res.status(200).json({ image: absoluteImage });
   } catch (error) {
     return res.status(502).json({ error: error.message || String(error) });
   }

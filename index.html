@@ -339,6 +339,8 @@
   .calendar-chart-legend .consensus::before{ background:var(--teal-soft); }
   .calendar-chart-legend .previous::before{ background:var(--rust-soft); }
   .calendar-chart-note{ color:var(--muted); font-size:11px; margin:10px 0 0; }
+  .calendar-definition{ margin-top:14px; padding:13px 15px; border-left:3px solid var(--brass); background:var(--panel-2); color:var(--text-dim); font-size:13px; line-height:1.6; }
+  .calendar-definition strong{ display:block; color:var(--brass-soft); font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; margin-bottom:4px; }
   .calendar-history{ width:100%; margin-top:12px; border-collapse:collapse; font-size:11px; }
   .calendar-history th{ color:var(--muted); font-family:'IBM Plex Mono',monospace; font-weight:500; text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
   .calendar-history td{ color:var(--text-dim); padding:7px 8px; border-bottom:1px solid var(--line); }
@@ -741,7 +743,8 @@ function extractImageUrl(item){
   const enclosure = item.enclosure || {};
   const html = item.content || item.description || '';
   const htmlImage = html.match(/<img[^>]+(?:src|data-src)=["']([^"']+)["']/i);
-  return item.thumbnail || item.image || enclosure.link || enclosure.url || (htmlImage ? htmlImage[1] : null) || null;
+  const candidate = item.thumbnail || item.image || enclosure.link || enclosure.url || (htmlImage ? htmlImage[1] : null) || null;
+  return candidate && !/googlelogo|google-news|favicon|logo\.svg|spacer\.gif/i.test(candidate) ? candidate : null;
 }
 
 async function refreshFeeds(){
@@ -1166,6 +1169,23 @@ function calendarDate(value){
   return isNaN(date) ? 'Date inconnue' : date.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' }) + '<br>' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 }
 function calendarImpactLabel(id){ return id==='high' ? 'Fort' : id==='medium' ? 'Moyen' : 'Faible'; }
+function calendarDefinition(eventName){
+  const name = (eventName||'').toLowerCase();
+  const definitions = [
+    { terms:['cpi','inflation','consumer price'], text:'Mesure l’évolution des prix payés par les ménages. Une inflation plus élevée que prévu peut renforcer les attentes de taux élevés et peser sur les actifs risqués.' },
+    { terms:['ppi','producer price'], text:'Mesure l’évolution des prix reçus par les producteurs. Elle donne un signal précoce sur les pressions de coûts qui peuvent ensuite se transmettre aux prix à la consommation.' },
+    { terms:['non-farm','nonfarm','payroll','emploi non agricole'], text:'Mesure les créations d’emplois hors secteur agricole. C’est un indicateur majeur de la vigueur du marché du travail et des futures décisions de banque centrale.' },
+    { terms:['unemployment','chômage'], text:'Mesure la part de la population active sans emploi. Une hausse persistante signale généralement un ralentissement du marché du travail.' },
+    { terms:['pmi','manufacturing','services pmi'], text:'Sondage auprès des entreprises sur leur activité. Un niveau supérieur à 50 indique généralement une expansion, tandis qu’un niveau inférieur indique une contraction.' },
+    { terms:['retail sales','ventes au détail'], text:'Mesure les dépenses des consommateurs dans le commerce de détail. Elle renseigne sur la demande intérieure et la résistance de la consommation.' },
+    { terms:['gdp','pib','gross domestic'], text:'Mesure la production totale de biens et services d’une économie. C’est l’un des principaux indicateurs de croissance, mais il est publié avec retard.' },
+    { terms:['interest rate','taux directeur','rate decision','fed funds'], text:'Annonce le niveau du taux directeur d’une banque centrale. Il influence le coût du crédit, les valorisations et les anticipations de marché.' },
+    { terms:['consumer confidence','confiance des consommateurs'], text:'Mesure le moral des ménages et leurs intentions de consommation. Elle aide à évaluer la solidité de la demande future.' },
+    { terms:['job ads','offres d’emploi'], text:'Suit le volume d’offres d’emploi publiées. Il s’agit d’un signal avancé de la demande de main-d’œuvre, à interpréter avec les autres indicateurs d’emploi.' },
+  ];
+  const match = definitions.find(definition => definition.terms.some(term => name.indexOf(term)!==-1));
+  return match ? match.text : 'Cet indicateur fournit une information chiffrée sur l’activité économique ou les conditions financières. Le marché compare surtout le résultat publié avec la prévision et la valeur précédente.';
+}
 function calendarNumber(value){ return typeof value==='number' && Number.isFinite(value) ? value : null; }
 function calendarChartMarkup(event, points){
   const usable = (points||[]).filter(point => ['actual','consensus','previous'].some(key => calendarNumber(point[key])!==null)).sort((a,b) => a.date-b.date);
@@ -1184,7 +1204,7 @@ function calendarChartMarkup(event, points){
 }
 function calendarDetailMarkup(event){
   const chart = calendarChartError ? '<p class="calendar-chart-note">' + calendarEscape(calendarChartError) + '</p>' : calendarChartPoints ? calendarChartMarkup(event, calendarChartPoints) : '<p class="calendar-chart-note">Chargement de l’historique Myfxbook…</p>';
-  return '<section class="calendar-detail" aria-label="Détails de l’annonce"><div class="calendar-detail-head"><div><h3>' + calendarEscape(event.event) + '</h3><p class="calendar-status">' + calendarEscape(event.currency) + ' · ' + calendarDate(event.date) + '</p></div><button class="calendar-detail-close" type="button" id="closeCalendarDetail" aria-label="Fermer les détails">×</button></div>' + chart + '</section>';
+  return '<section class="calendar-detail" aria-label="Détails de l’annonce"><div class="calendar-detail-head"><div><h3>' + calendarEscape(event.event) + '</h3><p class="calendar-status">' + calendarEscape(event.currency) + ' · ' + calendarDate(event.date) + '</p></div><button class="calendar-detail-close" type="button" id="closeCalendarDetail" aria-label="Fermer les détails">×</button></div>' + chart + '<div class="calendar-definition"><strong>Ce que mesure cette annonce</strong>' + calendarEscape(calendarDefinition(event.event)) + '</div></section>';
 }
 
 function renderCalendar(){
