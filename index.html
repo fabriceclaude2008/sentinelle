@@ -328,11 +328,19 @@
   .calendar-chart-wrap{ overflow-x:auto; border:1px solid var(--line); background:var(--ink); border-radius:var(--radius); }
   .calendar-chart{ display:block; width:100%; min-width:520px; height:230px; }
   .calendar-chart .grid{ stroke:var(--line); stroke-width:1; }
-  .calendar-chart .line{ fill:none; stroke:var(--brass); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .calendar-chart .line{ fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .calendar-chart .line.actual{ stroke:var(--brass); }
+  .calendar-chart .line.consensus{ stroke:var(--teal-soft); stroke-dasharray:5 4; }
+  .calendar-chart .line.previous{ stroke:var(--rust-soft); stroke-dasharray:2 4; }
   .calendar-chart .point{ fill:var(--brass); stroke:var(--ink); stroke-width:2; }
   .calendar-chart-legend{ display:flex; gap:14px; flex-wrap:wrap; color:var(--muted); font-size:11px; margin-top:9px; }
   .calendar-chart-legend span::before{ content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--brass); margin-right:5px; }
+  .calendar-chart-legend .consensus::before{ background:var(--teal-soft); }
+  .calendar-chart-legend .previous::before{ background:var(--rust-soft); }
   .calendar-chart-note{ color:var(--muted); font-size:11px; margin:10px 0 0; }
+  .calendar-history{ width:100%; margin-top:12px; border-collapse:collapse; font-size:11px; }
+  .calendar-history th{ color:var(--muted); font-family:'IBM Plex Mono',monospace; font-weight:500; text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  .calendar-history td{ color:var(--text-dim); padding:7px 8px; border-bottom:1px solid var(--line); }
   .calendar-credit{ color:var(--muted); font-size:11px; text-align:right; margin-top:8px; }
   .calendar-credit a{ color:var(--brass-soft); }
   @media (max-width:600px){
@@ -728,6 +736,12 @@ async function fetchOneFeed(query){
 }
 function articleId(item){ return item.link || item.title; }
 function stripHtml(s){ return (s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); }
+function extractImageUrl(item){
+  const enclosure = item.enclosure || {};
+  const html = item.content || item.description || '';
+  const htmlImage = html.match(/<img[^>]+(?:src|data-src)=["']([^"']+)["']/i);
+  return item.thumbnail || item.image || enclosure.link || enclosure.url || (htmlImage ? htmlImage[1] : null) || null;
+}
 
 async function refreshFeeds(){
   setStatus('busy','actualisation…');
@@ -745,7 +759,7 @@ async function refreshFeeds(){
     const enriched = dedup.slice(0,80).map(it => {
       const id = articleId(it);
       const isWatch = state.watchlist.some(w => it.title.toLowerCase().indexOf(w.toLowerCase())!==-1);
-      const image = it.thumbnail || (it.enclosure && it.enclosure.link) || null;
+      const image = extractImageUrl(it);
       const generic = isGenericTitle(it.title);
       return {
         id, title: it.title, link: it.link,
@@ -1140,17 +1154,19 @@ function calendarDate(value){
 function calendarImpactLabel(id){ return id==='high' ? 'Fort' : id==='medium' ? 'Moyen' : 'Faible'; }
 function calendarNumber(value){ return typeof value==='number' && Number.isFinite(value) ? value : null; }
 function calendarChartMarkup(event, points){
-  const usable = (points||[]).filter(point => calendarNumber(point.actual)!==null).sort((a,b) => a.date-b.date);
+  const usable = (points||[]).filter(point => ['actual','consensus','previous'].some(key => calendarNumber(point[key])!==null)).sort((a,b) => a.date-b.date);
   if(usable.length < 2) return '<p class="calendar-chart-note">Myfxbook ne fournit pas encore assez de valeurs historiques pour tracer ce graphique.</p>';
   const width = 720; const height = 230; const left = 42; const right = 16; const top = 18; const bottom = 30;
-  const values = usable.map(point => point.actual); const min = Math.min(...values); const max = Math.max(...values); const range = max===min ? 1 : max-min;
+  const values = usable.flatMap(point => ['actual','consensus','previous'].map(key => calendarNumber(point[key])).filter(value => value!==null)); const min = Math.min(...values); const max = Math.max(...values); const range = max===min ? 1 : max-min;
   const x = index => left + index * ((width-left-right) / Math.max(1, usable.length-1));
   const y = value => top + (max-value) * ((height-top-bottom) / range);
-  const path = usable.map((point,index) => (index?'L':'M') + x(index).toFixed(1) + ' ' + y(point.actual).toFixed(1)).join(' ');
+  const linePath = key => { let path=''; let connected=false; usable.forEach((point,index) => { const value=calendarNumber(point[key]); if(value===null){ connected=false; return; } path += (connected?'L':'M') + ' ' + x(index).toFixed(1) + ' ' + y(value).toFixed(1) + ' '; connected=true; }); return path.trim(); };
   const grid = [0, .5, 1].map(step => '<line class="grid" x1="' + left + '" x2="' + (width-right) + '" y1="' + (top + step*(height-top-bottom)) + '" y2="' + (top + step*(height-top-bottom)) + '"/>').join('');
-  const dots = usable.map((point,index) => '<circle class="point" cx="' + x(index).toFixed(1) + '" cy="' + y(point.actual).toFixed(1) + '" r="4"><title>' + new Date(point.date).toLocaleDateString('fr-FR') + ' : ' + point.actual + (point.unit||'') + '</title></circle>').join('');
-  return '<div class="calendar-chart-wrap"><svg class="calendar-chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Historique des valeurs réelles de ' + calendarEscape(event.event) + '">' + grid + '<path class="line" d="' + path + '"/>' + dots + '</svg></div>' +
-    '<div class="calendar-chart-legend"><span>Valeur réelle</span><span>Unité : ' + calendarEscape(usable[0].unit || '') + '</span></div>';
+  const dots = usable.filter(point => calendarNumber(point.actual)!==null).map(point => { const index=usable.indexOf(point); return '<circle class="point" cx="' + x(index).toFixed(1) + '" cy="' + y(point.actual).toFixed(1) + '" r="4"><title>' + new Date(point.date).toLocaleDateString('fr-FR') + ' : ' + point.actual + (point.unit||'') + '</title></circle>'; }).join('');
+  const rows = usable.slice(-6).reverse().map(point => '<tr><td>' + new Date(point.date).toLocaleDateString('fr-FR') + '</td><td>' + calendarEscape(point.actual ?? '—') + '</td><td>' + calendarEscape(point.consensus ?? '—') + '</td><td>' + calendarEscape(point.previous ?? '—') + '</td></tr>').join('');
+  return '<div class="calendar-chart-wrap"><svg class="calendar-chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Historique des valeurs de ' + calendarEscape(event.event) + '">' + grid + '<path class="line actual" d="' + linePath('actual') + '"/><path class="line consensus" d="' + linePath('consensus') + '"/><path class="line previous" d="' + linePath('previous') + '"/>' + dots + '</svg></div>' +
+    '<div class="calendar-chart-legend"><span>Réel</span><span class="consensus">Prévision</span><span class="previous">Précédent</span><span>Unité : ' + calendarEscape(usable[0].unit || '') + '</span></div>' +
+    '<table class="calendar-history"><thead><tr><th>Date</th><th>Réel</th><th>Prévision</th><th>Précédent</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 function calendarDetailMarkup(event){
   const chart = calendarChartError ? '<p class="calendar-chart-note">' + calendarEscape(calendarChartError) + '</p>' : calendarChartPoints ? calendarChartMarkup(event, calendarChartPoints) : '<p class="calendar-chart-note">Chargement de l’historique Myfxbook…</p>';

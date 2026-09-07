@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemInstruction }] },
         contents,
-        generationConfig: { maxOutputTokens: 600 },
+        generationConfig: { maxOutputTokens: 1600, temperature: 0.55 },
       }),
     });
 
@@ -54,7 +54,8 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return res.status(200).json({ reply: text || '(réponse vide)' });
+    const finishReason = data?.candidates?.[0]?.finishReason || 'UNKNOWN';
+    return res.status(200).json({ reply: text || '(réponse vide)', finishReason });
 
   } catch (e) {
     return res.status(500).json({ error: e.message || String(e) });
