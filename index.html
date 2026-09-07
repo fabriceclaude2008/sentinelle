@@ -317,6 +317,22 @@
   .calendar-event.impact-medium .calendar-impact{ background:rgba(203,161,53,0.14); color:var(--brass-soft); }
   .calendar-event.impact-high .calendar-impact{ background:rgba(189,75,60,0.14); color:var(--rust-soft); }
   .calendar-empty{ padding:40px 20px; text-align:center; color:var(--muted); border:1px dashed var(--line-strong); border-radius:var(--radius); }
+  .calendar-event{ width:100%; text-align:left; font:inherit; cursor:pointer; }
+  .calendar-event:hover, .calendar-event:focus-visible{ background:var(--panel-2); border-color:var(--line-strong); outline:none; }
+  .calendar-event:focus-visible{ box-shadow:0 0 0 2px var(--brass); }
+  .calendar-detail{ margin:0 0 16px; padding:18px; background:var(--panel); border:1px solid var(--brass); border-radius:var(--radius); }
+  .calendar-detail-head{ display:flex; align-items:start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .calendar-detail h3{ font-family:'Fraunces',serif; font-size:20px; line-height:1.25; margin:0; }
+  .calendar-detail-close{ background:none; border:1px solid var(--line); color:var(--muted); border-radius:var(--radius); width:32px; height:32px; cursor:pointer; flex-shrink:0; }
+  .calendar-detail-close:hover, .calendar-detail-close:focus-visible{ color:var(--text); border-color:var(--brass); outline:none; }
+  .calendar-chart-wrap{ overflow-x:auto; border:1px solid var(--line); background:var(--ink); border-radius:var(--radius); }
+  .calendar-chart{ display:block; width:100%; min-width:520px; height:230px; }
+  .calendar-chart .grid{ stroke:var(--line); stroke-width:1; }
+  .calendar-chart .line{ fill:none; stroke:var(--brass); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+  .calendar-chart .point{ fill:var(--brass); stroke:var(--ink); stroke-width:2; }
+  .calendar-chart-legend{ display:flex; gap:14px; flex-wrap:wrap; color:var(--muted); font-size:11px; margin-top:9px; }
+  .calendar-chart-legend span::before{ content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--brass); margin-right:5px; }
+  .calendar-chart-note{ color:var(--muted); font-size:11px; margin:10px 0 0; }
   .calendar-credit{ color:var(--muted); font-size:11px; text-align:right; margin-top:8px; }
   .calendar-credit a{ color:var(--brass-soft); }
   @media (max-width:600px){
@@ -645,7 +661,7 @@ let state = {
   watchlist: [], seenIds: [], notifOn:false, soundOn:false, notifyLevel:'majeur',
   refreshMinutes:3, activeFilter:'all', articles:[], lastRefresh:null,
   selectedId:null, analysisCache:{}, theme:'ardoise', reduceNoise:true,
-  page:'news', chatHistories:{}, quoteCache:{}, calendarImpact:'all', calendarCurrency:'all',
+  page:'news', chatHistories:{}, quoteCache:{}, calendarImpact:'all', calendarCurrency:'all', calendarSelectedId:null,
 };
 const STORAGE_KEY = 'sentinelle-settings-v4';
 
@@ -920,6 +936,7 @@ function renderDetailFull(article, a){
     '. Niveau de confiance de cette lecture : ' + (a.niveau_confiance==='eleve'?'élevé':a.niveau_confiance==='moyen'?'moyen':'limité') + '.';
 
   pane.innerHTML = '<div class="detail-inner">' + detailHeader(article) +
+    (article.image ? '<img src="' + article.image + '" alt="Illustration de la nouvelle : ' + article.title.replace(/"/g,'&quot;') + '" class="detail-photo" loading="lazy" onerror="this.remove()">' : '') +
 
     '<div class="orient-banner ' + orient + '">' +
       '<span class="glyph ' + orient + '">' + ORIENT_GLYPH[orient] + '</span>' +
@@ -955,7 +972,6 @@ function renderDetailFull(article, a){
       '<div class="chat-hint" id="chatHint"></div>' +
     '</div>' +
 
-    (article.image ? '<div class="section"><h4>Image de la nouvelle</h4><img src="' + article.image + '" alt="" class="detail-photo" onerror="this.parentElement.remove()"></div>' : '') +
   '</div>';
   wireDetailBack();
   wireChat(article);
@@ -1105,6 +1121,8 @@ function wireSettings(){
 }
 
 let calendarEvents = [];
+let calendarChartPoints = null;
+let calendarChartError = '';
 const CALENDAR_IMPACTS = [
   { id:'all', label:'Toutes' },
   { id:'high', label:'Fort' },
@@ -1120,6 +1138,24 @@ function calendarDate(value){
   return isNaN(date) ? 'Date inconnue' : date.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' }) + '<br>' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 }
 function calendarImpactLabel(id){ return id==='high' ? 'Fort' : id==='medium' ? 'Moyen' : 'Faible'; }
+function calendarNumber(value){ return typeof value==='number' && Number.isFinite(value) ? value : null; }
+function calendarChartMarkup(event, points){
+  const usable = (points||[]).filter(point => calendarNumber(point.actual)!==null).sort((a,b) => a.date-b.date);
+  if(usable.length < 2) return '<p class="calendar-chart-note">Myfxbook ne fournit pas encore assez de valeurs historiques pour tracer ce graphique.</p>';
+  const width = 720; const height = 230; const left = 42; const right = 16; const top = 18; const bottom = 30;
+  const values = usable.map(point => point.actual); const min = Math.min(...values); const max = Math.max(...values); const range = max===min ? 1 : max-min;
+  const x = index => left + index * ((width-left-right) / Math.max(1, usable.length-1));
+  const y = value => top + (max-value) * ((height-top-bottom) / range);
+  const path = usable.map((point,index) => (index?'L':'M') + x(index).toFixed(1) + ' ' + y(point.actual).toFixed(1)).join(' ');
+  const grid = [0, .5, 1].map(step => '<line class="grid" x1="' + left + '" x2="' + (width-right) + '" y1="' + (top + step*(height-top-bottom)) + '" y2="' + (top + step*(height-top-bottom)) + '"/>').join('');
+  const dots = usable.map((point,index) => '<circle class="point" cx="' + x(index).toFixed(1) + '" cy="' + y(point.actual).toFixed(1) + '" r="4"><title>' + new Date(point.date).toLocaleDateString('fr-FR') + ' : ' + point.actual + (point.unit||'') + '</title></circle>').join('');
+  return '<div class="calendar-chart-wrap"><svg class="calendar-chart" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Historique des valeurs réelles de ' + calendarEscape(event.event) + '">' + grid + '<path class="line" d="' + path + '"/>' + dots + '</svg></div>' +
+    '<div class="calendar-chart-legend"><span>Valeur réelle</span><span>Unité : ' + calendarEscape(usable[0].unit || '') + '</span></div>';
+}
+function calendarDetailMarkup(event){
+  const chart = calendarChartError ? '<p class="calendar-chart-note">' + calendarEscape(calendarChartError) + '</p>' : calendarChartPoints ? calendarChartMarkup(event, calendarChartPoints) : '<p class="calendar-chart-note">Chargement de l’historique Myfxbook…</p>';
+  return '<section class="calendar-detail" aria-label="Détails de l’annonce"><div class="calendar-detail-head"><div><h3>' + calendarEscape(event.event) + '</h3><p class="calendar-status">' + calendarEscape(event.currency) + ' · ' + calendarDate(event.date) + '</p></div><button class="calendar-detail-close" type="button" id="closeCalendarDetail" aria-label="Fermer les détails">×</button></div>' + chart + '</section>';
+}
 
 function renderCalendar(){
   const pane = document.getElementById('calendarPage');
@@ -1136,18 +1172,20 @@ function renderCalendar(){
   const currencyOptions = '<option value="all">Toutes les devises</option>' + currencies.map(currency =>
     '<option value="' + calendarEscape(currency) + '"' + (state.calendarCurrency===currency?' selected':'') + '>' + calendarEscape(currency) + '</option>'
   ).join('');
+  const selectedEvent = calendarEvents.find(event => event.id===state.calendarSelectedId);
   const list = filtered.length ? filtered.map(event =>
-    '<article class="calendar-event impact-' + calendarEscape(event.impact) + '">' +
+    '<button class="calendar-event impact-' + calendarEscape(event.impact) + '" type="button" data-calendar-event="' + calendarEscape(event.id) + '" aria-expanded="' + (event.id===state.calendarSelectedId) + '">' +
       '<div class="calendar-event-date">' + calendarDate(event.date) + '</div>' +
       '<div class="calendar-event-main"><div class="calendar-event-title"><span class="calendar-event-currency">' + calendarEscape(event.currency) + '</span>' + calendarEscape(event.event) + '</div>' +
       '<div class="calendar-event-values"><span>Précédent <strong>' + calendarEscape(event.previous || '—') + '</strong></span><span>Prévision <strong>' + calendarEscape(event.estimate || '—') + '</strong></span><span>Réel <strong>' + calendarEscape(event.actual || '—') + '</strong></span></div></div>' +
       '<span class="calendar-impact">' + calendarImpactLabel(event.impact) + '</span>' +
-    '</article>'
+    '</button>'
   ).join('') : '<div class="calendar-empty">Aucune annonce ne correspond à ces filtres.</div>';
 
   pane.innerHTML = '<div class="calendar-frame">' +
     '<div class="calendar-intro"><div><h2>Calendrier économique</h2><p>Les annonces Myfxbook, personnalisées pour Sentinelle.</p></div></div>' +
     '<div class="calendar-tools"><div class="calendar-filters" role="group" aria-label="Filtrer par impact">' + filters + '</div><select class="calendar-currency" id="calendarCurrency" aria-label="Filtrer par devise">' + currencyOptions + '</select></div>' +
+    (selectedEvent ? calendarDetailMarkup(selectedEvent) : '') +
     '<p class="calendar-status">' + filtered.length + ' annonce' + (filtered.length===1?'':'s') + ' affichée' + (filtered.length===1?'':'s') + '</p>' +
     '<div class="calendar-list" aria-live="polite">' + list + '</div>' +
     '<div class="calendar-credit">Données fournies par <a href="https://www.myfxbook.com/forex-economic-calendar?utm_source=widget13&utm_medium=link&utm_campaign=copyright" title="Calendrier économique Myfxbook" target="_blank" rel="noopener">Myfxbook</a></div>' +
@@ -1156,7 +1194,27 @@ function renderCalendar(){
   pane.querySelectorAll('[data-calendar-impact]').forEach(button => {
     button.onclick = () => { state.calendarImpact = button.dataset.calendarImpact; saveState(); renderCalendar(); };
   });
+  pane.querySelectorAll('[data-calendar-event]').forEach(button => {
+    button.onclick = () => openCalendarEvent(button.dataset.calendarEvent);
+  });
+  const closeDetail = document.getElementById('closeCalendarDetail');
+  if(closeDetail) closeDetail.onclick = () => { state.calendarSelectedId = null; calendarChartPoints = null; calendarChartError = ''; renderCalendar(); };
   document.getElementById('calendarCurrency').onchange = event => { state.calendarCurrency = event.target.value; saveState(); renderCalendar(); };
+}
+
+async function openCalendarEvent(id){
+  state.calendarSelectedId = id;
+  calendarChartPoints = null;
+  calendarChartError = '';
+  renderCalendar();
+  try{
+    const response = await fetch('/api/calendar?eventId=' + encodeURIComponent(id));
+    if(!response.ok) throw new Error('Graphique indisponible (HTTP ' + response.status + ')');
+    const data = await response.json();
+    if(state.calendarSelectedId===id) { calendarChartPoints = data.points || []; renderCalendar(); }
+  }catch(error){
+    if(state.calendarSelectedId===id) { calendarChartError = error.message; renderCalendar(); }
+  }
 }
 
 async function loadCalendar(){

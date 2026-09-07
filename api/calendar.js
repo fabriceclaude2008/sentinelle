@@ -1,5 +1,6 @@
 // Calendrier Myfxbook normalise pour l'interface du site.
 const WIDGET_URL = 'https://widget.mfbcdn.net/widget/calendar.html?lang=en&impacts=1,2,3&symbols=AUD,CAD,CHF,CNY,EUR,GBP,JPY,NZD,USD';
+const CHART_URL = 'https://widget.mfbcdn.net/calendar/event-chart-data.json?eventId=';
 
 function decodeHtml(value) {
   return value
@@ -34,7 +35,7 @@ function parseEvents(html) {
     if (!event || !Number.isFinite(timestamp)) return;
 
     events.push({
-      id: attribute(openingTag, 'data-calendar-row'),
+      id: attribute(openingTag, 'data-event-id') || attribute(openingTag, 'data-calendar-row'),
       date: new Date(timestamp).toISOString(),
       currency,
       event,
@@ -53,6 +54,13 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
 
   try {
+    const eventId = req.query?.eventId;
+    if (eventId && /^-?\d+$/.test(String(eventId))) {
+      const chartResponse = await fetch(CHART_URL + encodeURIComponent(eventId), { headers: { 'User-Agent': 'Sentinelle calendar' } });
+      if (!chartResponse.ok) return res.status(502).json({ error: 'Graphique Myfxbook indisponible (HTTP ' + chartResponse.status + ')' });
+      return res.status(200).json({ eventId: String(eventId), points: await chartResponse.json() });
+    }
+
     const response = await fetch(WIDGET_URL, { headers: { 'User-Agent': 'Sentinelle calendar' } });
     if (!response.ok) return res.status(502).json({ error: 'Myfxbook a répondu HTTP ' + response.status });
     const events = parseEvents(await response.text());
