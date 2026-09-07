@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
     const response = await fetch(WIDGET_URL, { headers: { 'User-Agent': 'Sentinelle calendar' } });
     if (!response.ok) return res.status(502).json({ error: 'Myfxbook a répondu HTTP ' + response.status });
-    const events = parseEvents(await response.text());
+    const events = parseEvents(await response.text()).filter(event => event.impact === 'high' || event.impact === 'medium');
     return res.status(200).json({ source: 'Myfxbook', updatedAt: new Date().toISOString(), events });
   } catch (error) {
     return res.status(502).json({ error: error.message || String(error) });

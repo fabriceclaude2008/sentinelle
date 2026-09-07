@@ -302,7 +302,7 @@
   .calendar-filter{ background:var(--panel); border:1px solid var(--line); color:var(--muted); padding:7px 11px; border-radius:var(--radius); cursor:pointer; white-space:nowrap; font-size:12px; }
   .calendar-filter.active{ background:var(--panel-2); border-color:var(--brass); color:var(--brass-soft); }
   .calendar-filter:focus-visible, .calendar-currency:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
-  .calendar-currency{ margin-left:auto; min-width:130px; }
+  .calendar-currency, .calendar-range{ margin-left:auto; min-width:130px; }
   .calendar-status{ color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:11px; margin:0 0 10px; }
   .calendar-list{ display:grid; gap:10px; }
   .calendar-event{ display:grid; grid-template-columns:92px minmax(0,1fr) auto; gap:16px; align-items:center; padding:14px 16px; background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--teal); border-radius:var(--radius); }
@@ -353,7 +353,7 @@
     .calendar-intro p{ font-size:12px; margin-top:4px; }
     .calendar-tools{ align-items:stretch; display:block; }
     .calendar-filters{ margin-bottom:10px; }
-    .calendar-currency{ width:100%; margin-left:0; }
+    .calendar-range, .calendar-currency{ width:100%; margin:0 0 8px; }
     .calendar-event{ grid-template-columns:1fr auto; gap:8px 12px; padding:13px 12px; }
     .calendar-event-date{ grid-column:1 / -1; }
     .calendar-event-main{ grid-column:1 / 2; }
@@ -672,7 +672,7 @@ let state = {
   watchlist: [], seenIds: [], notifOn:false, soundOn:false, notifyLevel:'majeur',
   refreshMinutes:3, activeFilter:'all', articles:[], lastRefresh:null,
   selectedId:null, analysisCache:{}, theme:'ardoise', reduceNoise:true,
-  page:'news', chatHistories:{}, quoteCache:{}, calendarImpact:'all', calendarCurrency:'all', calendarSelectedId:null,
+  page:'news', chatHistories:{}, quoteCache:{}, calendarImpact:'all', calendarCurrency:'all', calendarRange:'week', calendarSelectedId:null,
 };
 const STORAGE_KEY = 'sentinelle-settings-v4';
 
@@ -691,7 +691,7 @@ async function saveState(){
       watchlist:state.watchlist, seenIds:state.seenIds.slice(-300), notifOn:state.notifOn,
       soundOn:state.soundOn, notifyLevel:state.notifyLevel, refreshMinutes:state.refreshMinutes,
       theme:state.theme, reduceNoise:state.reduceNoise, calendarImpact:state.calendarImpact,
-      calendarCurrency:state.calendarCurrency,
+      calendarCurrency:state.calendarCurrency, calendarRange:state.calendarRange,
     }), false);
   }catch(e){}
 }
@@ -1158,7 +1158,12 @@ const CALENDAR_IMPACTS = [
   { id:'all', label:'Toutes' },
   { id:'high', label:'Fort' },
   { id:'medium', label:'Moyen' },
-  { id:'low', label:'Faible' },
+];
+const CALENDAR_RANGES = [
+  { id:'today', label:"Aujourd’hui" },
+  { id:'tomorrow', label:'Demain' },
+  { id:'week', label:'Cette semaine' },
+  { id:'all', label:'Toutes les dates' },
 ];
 
 function calendarEscape(value){
@@ -1167,6 +1172,22 @@ function calendarEscape(value){
 function calendarDate(value){
   const date = new Date(value);
   return isNaN(date) ? 'Date inconnue' : date.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' }) + '<br>' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+}
+function calendarDayKey(value){
+  const date = new Date(value);
+  return isNaN(date) ? '' : date.toLocaleDateString('en-CA');
+}
+function calendarRangeIncludes(value, range){
+  if(range==='all') return true;
+  const now = new Date();
+  const target = new Date(value);
+  if(isNaN(target)) return false;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  const diff = Math.round((targetDay - today) / 86400000);
+  if(range==='today') return diff===0;
+  if(range==='tomorrow') return diff===1;
+  return diff>=0 && diff<=6;
 }
 function calendarImpactLabel(id){ return id==='high' ? 'Fort' : id==='medium' ? 'Moyen' : 'Faible'; }
 function calendarDefinition(eventName){
@@ -1212,7 +1233,8 @@ function renderCalendar(){
   const currencies = Array.from(new Set(calendarEvents.map(event => event.currency).filter(Boolean))).sort();
   const filtered = calendarEvents.filter(event =>
     (state.calendarImpact==='all' || event.impact===state.calendarImpact) &&
-    (state.calendarCurrency==='all' || event.currency===state.calendarCurrency)
+    (state.calendarCurrency==='all' || event.currency===state.calendarCurrency) &&
+    calendarRangeIncludes(event.date, state.calendarRange)
   );
   if(state.calendarCurrency!=='all' && currencies.indexOf(state.calendarCurrency)===-1) state.calendarCurrency='all';
 
@@ -1222,6 +1244,7 @@ function renderCalendar(){
   const currencyOptions = '<option value="all">Toutes les devises</option>' + currencies.map(currency =>
     '<option value="' + calendarEscape(currency) + '"' + (state.calendarCurrency===currency?' selected':'') + '>' + calendarEscape(currency) + '</option>'
   ).join('');
+  const rangeOptions = CALENDAR_RANGES.map(range => '<option value="' + range.id + '"' + (state.calendarRange===range.id?' selected':'') + '>' + range.label + '</option>').join('');
   const selectedEvent = calendarEvents.find(event => event.id===state.calendarSelectedId);
   const list = filtered.length ? filtered.map(event =>
     '<button class="calendar-event impact-' + calendarEscape(event.impact) + '" type="button" data-calendar-event="' + calendarEscape(event.id) + '" aria-expanded="' + (event.id===state.calendarSelectedId) + '">' +
@@ -1234,7 +1257,7 @@ function renderCalendar(){
 
   pane.innerHTML = '<div class="calendar-frame">' +
     '<div class="calendar-intro"><div><h2>Calendrier économique</h2><p>Les annonces Myfxbook, personnalisées pour Sentinelle.</p></div></div>' +
-    '<div class="calendar-tools"><div class="calendar-filters" role="group" aria-label="Filtrer par impact">' + filters + '</div><select class="calendar-currency" id="calendarCurrency" aria-label="Filtrer par devise">' + currencyOptions + '</select></div>' +
+    '<div class="calendar-tools"><div class="calendar-filters" role="group" aria-label="Filtrer par impact">' + filters + '</div><select class="calendar-range" id="calendarRange" aria-label="Filtrer par période">' + rangeOptions + '</select><select class="calendar-currency" id="calendarCurrency" aria-label="Filtrer par devise">' + currencyOptions + '</select></div>' +
     (selectedEvent ? calendarDetailMarkup(selectedEvent) : '') +
     '<p class="calendar-status">' + filtered.length + ' annonce' + (filtered.length===1?'':'s') + ' affichée' + (filtered.length===1?'':'s') + '</p>' +
     '<div class="calendar-list" aria-live="polite">' + list + '</div>' +
@@ -1249,6 +1272,7 @@ function renderCalendar(){
   });
   const closeDetail = document.getElementById('closeCalendarDetail');
   if(closeDetail) closeDetail.onclick = () => { state.calendarSelectedId = null; calendarChartPoints = null; calendarChartError = ''; renderCalendar(); };
+  document.getElementById('calendarRange').onchange = event => { state.calendarRange = event.target.value; state.calendarSelectedId = null; saveState(); renderCalendar(); };
   document.getElementById('calendarCurrency').onchange = event => { state.calendarCurrency = event.target.value; saveState(); renderCalendar(); };
 }
 
