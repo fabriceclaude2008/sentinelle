@@ -1,0 +1,1167 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sentinelle">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<style>
+  :root{
+    --ink:#0B1016;
+    --panel:#121924;
+    --panel-2:#182130;
+    --panel-3:#1E2836;
+    --line:rgba(226,224,216,0.08);
+    --line-strong:rgba(226,224,216,0.15);
+    --text:#E2E0D8;
+    --text-dim:#B7B4A9;
+    --muted:#7C8494;
+    --brass:#CBA135;
+    --brass-soft:#E8C766;
+    --rust:#BD4B3C;
+    --rust-soft:#DE8B7E;
+    --teal:#3E8E79;
+    --teal-soft:#8FCBBA;
+    --radius:4px;
+  }
+  body.theme-emeraude{
+    --ink:#0A1512; --panel:#0F1E19; --panel-2:#142822; --panel-3:#1A342C;
+    --line:rgba(220,230,224,0.08); --line-strong:rgba(220,230,224,0.16);
+    --text:#E3EAE6; --text-dim:#B4C2BB; --muted:#7D9089;
+    --brass:#3FAE86; --brass-soft:#7DD9AF; --rust:#C4534A; --rust-soft:#E29A8F;
+    --teal:#3E8E79; --teal-soft:#8FCBBA;
+  }
+  body.theme-minuit{
+    --ink:#080B14; --panel:#0D1220; --panel-2:#121A2C; --panel-3:#182238;
+    --line:rgba(220,226,240,0.08); --line-strong:rgba(220,226,240,0.16);
+    --text:#E4E8F2; --text-dim:#AEB6CC; --muted:#71799A;
+    --brass:#5C9FE0; --brass-soft:#93C4F0; --rust:#C4534A; --rust-soft:#E29A8F;
+    --teal:#3E8E79; --teal-soft:#8FCBBA;
+  }
+  body.theme-papier{
+    --ink:#F3EFE4; --panel:#FFFFFF; --panel-2:#EDE8DA; --panel-3:#E1DBC8;
+    --line:rgba(30,25,15,0.12); --line-strong:rgba(30,25,15,0.22);
+    --text:#221E15; --text-dim:#4A4536; --muted:#7A755F;
+    --brass:#B0432D; --brass-soft:#8C3221; --rust:#8C3221; --rust-soft:#B0432D;
+    --teal:#2E6E5C; --teal-soft:#215043;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:var(--ink); color:var(--text);
+    font-family:'Inter',sans-serif; font-size:14.5px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:inherit; }
+  ::selection{ background:var(--brass); color:var(--ink); }
+  button{ font-family:inherit; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--panel-3); border-radius:4px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
+  .shell{ height:100vh; display:flex; flex-direction:column; }
+
+  /* ---- Top bar ---- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 22px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, var(--panel) 0%, var(--ink) 100%);
+    flex-shrink:0; gap:16px; flex-wrap:wrap;
+  }
+  .brand{ display:flex; align-items:baseline; gap:12px; }
+  .brand .mark{
+    font-family:'Fraunces',serif; font-weight:600; font-size:21px; letter-spacing:-0.01em;
+  }
+  .brand .mark em{ font-style:normal; color:var(--brass); }
+  .brand .clock{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
+  .topbar-right{ display:flex; align-items:center; gap:14px; }
+  .pulse{ display:flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); }
+  .pulse .dot{ width:6px; height:6px; border-radius:50%; background:var(--teal); }
+  .pulse .dot.busy{ background:var(--brass); animation:blink 1s infinite; }
+  .pulse .dot.err{ background:var(--rust); }
+  @keyframes blink{ 50%{ opacity:0.3; } }
+  .icon-btn{
+    background:none; border:1px solid var(--line); color:var(--text-dim);
+    width:32px; height:32px; border-radius:var(--radius); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:15px;
+  }
+  .icon-btn:hover{ border-color:var(--line-strong); color:var(--text); }
+
+  /* ---- Page nav ---- */
+  .pagenav{ display:flex; gap:4px; padding:10px 22px 0; flex-shrink:0; }
+  .pagenav-btn{
+    background:none; border:none; color:var(--muted); font-size:13.5px; font-weight:500;
+    padding:8px 4px; margin-right:20px; cursor:pointer; border-bottom:2px solid transparent;
+  }
+  .pagenav-btn.active{ color:var(--text); border-bottom-color:var(--brass); }
+
+  /* ---- Filter bar ---- */
+  .filterbar{
+    display:flex; align-items:center; gap:6px; padding:10px 22px;
+    border-bottom:1px solid var(--line); flex-shrink:0; overflow-x:auto;
+  }
+  .chip-filter{
+    background:none; border:1px solid var(--line); color:var(--muted);
+    padding:6px 13px; border-radius:20px; font-size:12.5px; font-weight:500;
+    cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:6px;
+  }
+  .chip-filter.active{ border-color:var(--brass); color:var(--brass-soft); background:rgba(203,161,53,0.08); }
+  .chip-filter .n{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; opacity:0.75; }
+  .filterbar .sep{ width:1px; height:18px; background:var(--line); margin:0 4px; flex-shrink:0; }
+
+  /* ---- Main layout ---- */
+  .main{ flex:1; display:flex; min-height:0; }
+  .list-pane{
+    width:420px; flex-shrink:0; border-right:1px solid var(--line);
+    overflow-y:auto;
+  }
+  .detail-pane{ flex:1; overflow-y:auto; position:relative; }
+
+  @media (max-width: 860px){
+    .list-pane{ width:100%; border-right:none; }
+    .detail-pane{ display:none; position:fixed; inset:0; top:0; background:var(--ink); z-index:20; overflow-y:auto; }
+    .main.showing-detail .list-pane{ display:none; }
+    .main.showing-detail .detail-pane{ display:block; }
+  }
+
+  /* ---- List rows ---- */
+  .row{
+    display:block; width:100%; text-align:left; background:none; border:none;
+    padding:15px 20px; border-bottom:1px solid var(--line); cursor:pointer; color:inherit;
+  }
+  .row:hover{ background:var(--panel); }
+  .row.selected{ background:var(--panel-2); border-left:3px solid var(--brass); padding-left:17px; }
+  .row .rowtop{ display:flex; align-items:center; gap:7px; margin-bottom:7px; flex-wrap:wrap; }
+  .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.02em;
+    padding:2px 7px; border-radius:2px;
+  }
+  .tag.h-court{ background:rgba(189,75,60,0.15); color:var(--rust-soft); }
+  .tag.h-moyen{ background:rgba(203,161,53,0.15); color:var(--brass-soft); }
+  .tag.h-long{ background:rgba(62,142,121,0.15); color:var(--teal-soft); }
+  .tag.imp-majeur{ background:rgba(189,75,60,0.22); color:#F0A99C; border:1px solid rgba(189,75,60,0.4); }
+  .orient{ font-size:13px; }
+  .orient.positif{ color:var(--teal-soft); }
+  .orient.negatif{ color:var(--rust-soft); }
+  .orient.mixte, .orient.neutre{ color:var(--muted); }
+  .star{ color:var(--brass); font-size:12px; }
+  .row .rowtitle{
+    font-family:'Fraunces',serif; font-size:15.5px; font-weight:500; line-height:1.35; margin-bottom:6px;
+  }
+  .row .rowmeta{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); }
+
+  .listhead{
+    padding:12px 20px 8px; font-size:11px; text-transform:none; color:var(--muted);
+    font-family:'IBM Plex Mono',monospace; border-bottom:1px solid var(--line);
+  }
+
+  /* ---- Detail pane content ---- */
+  .detail-inner{ max-width:680px; margin:0 auto; padding:30px 28px 80px; }
+  .back-btn{
+    display:none; background:none; border:none; color:var(--muted); font-size:13px;
+    cursor:pointer; padding:0; margin-bottom:18px; align-items:center; gap:6px;
+  }
+  @media (max-width:860px){ .back-btn{ display:flex; } }
+  .detail-badges{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .detail-title{
+    font-family:'Fraunces',serif; font-weight:600; font-size:27px; line-height:1.3;
+    margin:0 0 12px;
+  }
+  .detail-photo{
+    width:100%; max-height:340px; object-fit:cover; border-radius:var(--radius);
+    margin-bottom:16px; border:1px solid var(--line); display:block;
+  }
+  .detail-meta{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+    margin-bottom:26px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;
+  }
+  .detail-meta a{ color:var(--brass-soft); text-decoration:none; }
+  .detail-meta a:hover{ text-decoration:underline; }
+
+  .orient-banner{
+    display:flex; align-items:center; gap:14px; padding:16px 18px; border-radius:var(--radius);
+    margin-bottom:26px; border:1px solid var(--line);
+  }
+  .orient-banner.positif{ background:rgba(62,142,121,0.09); border-color:rgba(62,142,121,0.3); }
+  .orient-banner.negatif{ background:rgba(189,75,60,0.09); border-color:rgba(189,75,60,0.3); }
+  .orient-banner.mixte, .orient-banner.neutre{ background:var(--panel); }
+  .orient-banner .glyph{ font-size:26px; line-height:1; font-family:'Fraunces',serif; }
+  .orient-banner .glyph.positif{ color:var(--teal-soft); }
+  .orient-banner .glyph.negatif{ color:var(--rust-soft); }
+  .orient-banner .txt .t1{ font-weight:600; font-size:14.5px; margin-bottom:2px; }
+  .orient-banner .txt .t2{ font-size:12.5px; color:var(--muted); }
+
+  .section{ margin-bottom:28px; }
+  .section h4{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.03em;
+    color:var(--muted); margin:0 0 10px; font-weight:500;
+  }
+  .section p{ margin:0; font-size:15px; line-height:1.65; color:var(--text-dim); }
+  .section ul{ margin:0; padding-left:20px; }
+  .section li{ margin-bottom:7px; font-size:14.5px; line-height:1.55; }
+
+  .twocol{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:560px){ .twocol{ grid-template-columns:1fr; } }
+  .twocol .box{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; }
+  .twocol .box.pour{ border-left:3px solid var(--teal); }
+  .twocol .box.contre{ border-left:3px solid var(--rust); }
+
+  .taglist{ display:flex; gap:8px; flex-wrap:wrap; }
+  .taglist .pill{
+    background:var(--panel-2); border:1px solid var(--line); padding:5px 12px;
+    border-radius:20px; font-size:12.5px;
+  }
+
+  .confidence{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); }
+  .confidence .bars{ display:flex; gap:2px; }
+  .confidence .bar{ width:5px; height:11px; background:var(--panel-3); border-radius:1px; }
+  .confidence .bar.on{ background:var(--brass); }
+
+  .warning-box{
+    background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--muted);
+    padding:12px 16px; border-radius:var(--radius); font-size:12.5px; color:var(--muted); line-height:1.6;
+    margin-top:6px;
+  }
+
+  .skeleton{ padding:30px 28px; }
+  .sk-line{ height:12px; background:var(--panel-2); border-radius:3px; margin-bottom:10px; animation:pulse 1.4s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
+
+  .empty-pane{
+    height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column;
+    color:var(--muted); padding:40px; text-align:center;
+  }
+  .empty-pane .big{ font-family:'Fraunces',serif; font-size:19px; color:var(--text-dim); margin-bottom:8px; }
+
+  .retry-btn{
+    background:var(--panel-2); border:1px solid var(--brass); color:var(--brass-soft);
+    padding:8px 16px; border-radius:var(--radius); cursor:pointer; font-size:13px; margin-top:12px;
+  }
+
+  /* ---- Settings overlay ---- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(6,9,13,0.7); z-index:40; display:none;
+    align-items:flex-start; justify-content:center; padding:60px 20px; overflow-y:auto;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:6px;
+    max-width:560px; width:100%; padding:28px 30px; margin-bottom:60px;
+  }
+  .modal h2{ font-family:'Fraunces',serif; font-size:22px; margin:0 0 4px; }
+  .modal .sub{ color:var(--muted); font-size:13px; margin-bottom:22px; }
+  .modal .close{ float:right; background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+  .field-block{ margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .field-block:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .field-block h3{ font-size:14.5px; margin:0 0 3px; }
+  .field-block .d{ color:var(--muted); font-size:12.5px; margin-bottom:12px; }
+  .field-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .field-row input[type=text]{
+    flex:1; min-width:160px; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--text); padding:9px 12px; border-radius:3px; font-size:14px;
+  }
+  .field-row button{
+    background:var(--panel-2); border:1px solid var(--brass-soft); color:var(--brass-soft);
+    padding:9px 16px; border-radius:3px; cursor:pointer; font-weight:500;
+  }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .chip{ background:var(--panel-2); border:1px solid var(--line); border-radius:20px; padding:5px 12px; font-size:13px; display:flex; align-items:center; gap:8px; }
+  .chip button{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:0; }
+  .toggle-line{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; }
+  .toggle-line .lbl{ font-size:14px; }
+  .toggle-line .lbl .dd{ color:var(--muted); font-size:12px; display:block; margin-top:2px; }
+  .switch{ width:38px; height:21px; background:var(--panel-2); border:1px solid var(--line); border-radius:11px; position:relative; cursor:pointer; flex-shrink:0; }
+  .switch.on{ background:rgba(203,161,53,0.25); border-color:var(--brass); }
+  .switch .knob{ position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%; background:var(--muted); transition:left .15s; }
+  .switch.on .knob{ left:19px; background:var(--brass); }
+  select{ background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:7px 10px; border-radius:3px; font-size:13.5px; }
+  .note{ font-size:12px; color:var(--muted); line-height:1.6; }
+
+  /* ---- Theme picker ---- */
+  .theme-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .theme-swatch{
+    border:2px solid var(--line); border-radius:6px; padding:10px 8px; cursor:pointer;
+    text-align:center; background:var(--panel-2);
+  }
+  .theme-swatch.active{ border-color:var(--brass); }
+  .theme-swatch .dots{ display:flex; justify-content:center; gap:4px; margin-bottom:6px; }
+  .theme-swatch .dots span{ width:14px; height:14px; border-radius:50%; display:inline-block; }
+  .theme-swatch .lbl{ font-size:11px; color:var(--text-dim); }
+
+  /* ---- Calendar page ---- */
+  .calendar-page{ display:none; flex:1; overflow-y:auto; padding:24px 22px 60px; }
+  .calendar-page.active{ display:block; }
+  .cal-day{ margin-bottom:26px; }
+  .cal-day h3{
+    font-family:'Fraunces',serif; font-size:16px; font-weight:600; margin:0 0 10px;
+    padding-bottom:8px; border-bottom:1px solid var(--line); text-transform:capitalize;
+  }
+  .cal-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .cal-table th{
+    text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted);
+    font-weight:500; padding:6px 10px; border-bottom:1px solid var(--line);
+  }
+  .cal-table td{ padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  .cal-table tr:hover td{ background:var(--panel); }
+  .cal-time{ font-family:'IBM Plex Mono',monospace; color:var(--muted); white-space:nowrap; }
+  .cal-imp{ display:flex; gap:2px; }
+  .cal-imp span{ width:6px; height:6px; border-radius:50%; background:var(--panel-3); }
+  .cal-imp span.on{ background:var(--brass); }
+  .cal-dir{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; padding:2px 8px; border-radius:3px; white-space:nowrap;
+  }
+  .cal-dir.hausse{ background:rgba(62,142,121,0.15); color:var(--teal-soft); }
+  .cal-dir.baisse{ background:rgba(189,75,60,0.15); color:var(--rust-soft); }
+  .cal-dir.mixte{ background:var(--panel-3); color:var(--muted); }
+  .cal-values{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); white-space:nowrap; }
+  .cal-empty{ text-align:center; padding:60px 20px; color:var(--muted); }
+  .cal-empty .big{ font-family:'Fraunces',serif; font-size:19px; color:var(--text-dim); margin-bottom:10px; }
+  .cal-empty a{ color:var(--brass-soft); }
+
+  /* ---- Chat under article ---- */
+  .chat-box{ margin-top:10px; border-top:1px solid var(--line); padding-top:22px; }
+  .chat-log{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px; max-height:340px; overflow-y:auto; }
+  .chat-msg{ padding:10px 13px; border-radius:8px; font-size:13.5px; line-height:1.5; max-width:88%; }
+  .chat-msg.user{ background:var(--panel-2); align-self:flex-end; }
+  .chat-msg.assistant{ background:var(--panel); border:1px solid var(--line); align-self:flex-start; }
+  .chat-input-row{ display:flex; gap:8px; }
+  .chat-input-row input{
+    flex:1; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    padding:10px 13px; border-radius:6px; font-size:13.5px;
+  }
+  .chat-input-row button{
+    background:var(--brass); color:var(--ink); border:none; padding:0 18px; border-radius:6px;
+    font-weight:600; cursor:pointer;
+  }
+  .chat-hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+  /* ---- Trading synthesis ---- */
+  .trading-synthese{ background:var(--panel); border:1px solid var(--brass-soft); border-radius:var(--radius); padding:18px 20px; }
+  .trading-synthese h4{ color:var(--brass-soft); }
+  .trading-synthese p{ color:var(--text); font-size:15px; }
+  .quote-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .quote-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:10px 16px; min-width:110px;
+  }
+  .q-sym{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .q-price{ font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:500; }
+  .q-price.up{ color:var(--teal-soft); }
+  .q-price.down{ color:var(--rust-soft); }
+  .q-pct{ font-size:12px; }
+</style>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">SENTIN<em>ELLE</em></span>
+      <span class="clock" id="clock"></span>
+    </div>
+    <div class="topbar-right">
+      <div class="pulse"><span class="dot off" id="statusDot"></span><span id="statusText">initialisation…</span></div>
+      <button class="icon-btn" id="openSettings" title="Réglages">⚙</button>
+    </div>
+  </div>
+
+  <div class="pagenav">
+    <button class="pagenav-btn active" data-page="news">Actualités</button>
+    <button class="pagenav-btn" data-page="calendar">Calendrier économique</button>
+  </div>
+
+  <div class="filterbar" id="filterbar"></div>
+
+  <div class="main" id="mainArea">
+    <div class="list-pane" id="listPane"></div>
+    <div class="detail-pane" id="detailPane">
+      <div class="empty-pane">
+        <div class="big">Sélectionne une nouvelle</div>
+        Clique sur un titre à gauche pour ouvrir l'analyse complète.
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar-page" id="calendarPage"></div>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <button class="close" id="closeSettings">×</button>
+    <h2>Réglages</h2>
+    <div class="sub">Personnalise ta veille</div>
+
+    <div class="field-block">
+      <h3>Apparence</h3>
+      <div class="d">Thème visuel du site</div>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <div class="field-block">
+      <h3>Liste de suivi</h3>
+      <div class="d">Entreprises ou tickers prioritaires (ex. Apple, Shopify, TSLA)</div>
+      <div class="field-row"><input type="text" id="watchInput" placeholder="Nom ou ticker"><button id="addWatch">Ajouter</button></div>
+      <div class="chips" id="watchChips"></div>
+    </div>
+
+    <div class="field-block">
+      <h3>Filtrage des nouvelles</h3>
+      <div class="toggle-line"><div class="lbl">Réduire le bruit<span class="dd">Cache les nouvelles génériques / faible impact — ne garde que celles classées importantes</span></div><div class="switch" id="switchReduceNoise"><div class="knob"></div></div></div>
+    </div>
+
+    <div class="field-block">
+      <h3>Notifications</h3>
+      <div class="toggle-line"><div class="lbl">Notifications du navigateur<span class="dd" id="notifPermTxt"></span></div><div class="switch" id="switchNotif"><div class="knob"></div></div></div>
+      <div class="toggle-line"><div class="lbl">Son d'alerte<span class="dd">Signal sonore pour impact majeur</span></div><div class="switch" id="switchSound"><div class="knob"></div></div></div>
+      <div class="toggle-line"><div class="lbl">Seuil<span class="dd">Niveau qui déclenche une alerte</span></div>
+        <select id="notifyLevel"><option value="majeur">Impact majeur</option><option value="majeur+modere">Majeur + modéré</option></select></div>
+    </div>
+
+    <div class="field-block">
+      <h3>Actualisation</h3>
+      <div class="toggle-line"><div class="lbl">Fréquence<span class="dd">Plus rapide = alertes plus tôt</span></div>
+        <select id="refreshRate"><option value="1">1 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select></div>
+    </div>
+
+    <div class="field-block">
+      <h3>Calendrier économique &amp; cours en direct</h3>
+      <div class="note">Alimentés automatiquement par le serveur du site — aucune clé à entrer ici.</div>
+    </div>
+
+    <div class="field-block">
+      <h3>Chat sur une nouvelle</h3>
+      <div class="note">Le chat est fourni automatiquement par le serveur du site — aucune connexion requise.</div>
+    </div>
+
+
+    <div class="field-block">
+      <h3>Sur ton iPhone</h3>
+      <div class="note">Dans Safari : bouton Partager → « Sur l'écran d'accueil ». L'app s'ouvre alors en plein écran comme une vraie app. Les notifications ne fonctionnent toutefois que lorsque l'app est ouverte au premier plan — voir la conversation pour le détail de cette limite.</div>
+    </div>
+
+    <div class="field-block">
+      <h3>À propos</h3>
+      <div class="note">Les nouvelles proviennent de Google News. L'analyse de chaque article est générée automatiquement à partir du titre et du résumé disponibles — elle peut être incomplète si la source ne fournit que peu de détails. Aucune analyse ici ne constitue un conseil d'achat ou de vente personnalisé.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+(function(){
+
+const CATEGORY_RULES = [
+  { name:'ma', horizon:'court', impact:'majeur',
+    keywords:['fusion','acquisition','rachat total','opa','offre publique d\u2019achat'],
+    pour:['Le marché intègre en général ce type de nouvelle en quelques heures.','Une confirmation officielle pèse plus qu\u2019une rumeur.'],
+    contre:['Les opérations de fusion-acquisition échouent parfois en cours de route.','Une prime déjà intégrée au cours limite souvent le potentiel restant.'],
+    verifier:['Le communiqué officiel des deux entreprises','La prime offerte par rapport au cours précédent','Les conditions suspensives (réglementaire, vote des actionnaires)'] },
+  { name:'defaut', horizon:'court', impact:'majeur',
+    keywords:['faillite','banqueroute','défaut de paiement','liquidation judiciaire','dépôt de bilan'],
+    pour:['Un défaut confirmé change fondamentalement la thèse d\u2019investissement.'],
+    contre:['Le prix a souvent déjà chuté fortement avant l\u2019annonce officielle.'],
+    verifier:['La structure de la dette et le rang des créanciers','Si une restructuration est évoquée'] },
+  { name:'choc', horizon:'court', impact:'majeur',
+    keywords:['krach','effondrement','chute libre','plonge de','panique boursière','s\u2019effondre'],
+    pour:['Les mouvements de panique créent parfois un écart entre prix et valeur fondamentale.'],
+    contre:['"Ça baisse beaucoup" n\u2019est jamais en soi une raison d\u2019acheter.','Le risque d\u2019attraper un couteau qui tombe est réel avant de connaître la cause précise.'],
+    verifier:['La cause précise du mouvement','Si les fondamentaux ont changé, ou seulement le sentiment'] },
+  { name:'resultats', horizon:'court', impact:'modere',
+    keywords:['résultats trimestriels','bénéfices trimestriels','chiffre d\u2019affaires trimestriel','résultats annuels','avertissement sur résultats','profit warning','prévisions de bénéfices','bénéfices'],
+    pour:['Les résultats donnent des données fraîches et vérifiables.'],
+    contre:['La réaction dépend plus des attentes que du résultat brut lui-même.','Une seule publication ne change généralement pas une thèse de long terme.'],
+    verifier:['La croissance vs attentes des analystes','L\u2019évolution des marges','Les prévisions (guidance) pour la suite'] },
+  { name:'direction', horizon:'court', impact:'mineur',
+    keywords:['démission','pdg quitte','nouveau directeur général'],
+    pour:['Peut signaler un changement de stratégie à surveiller.'],
+    contre:['Le marché réagit souvent de façon excessive et temporaire.'],
+    verifier:['Le contexte du départ','Le profil du successeur'] },
+  { name:'reglementaire', horizon:'court', impact:'modere',
+    keywords:['amende','procès','enquête antitrust','sanction réglementaire'],
+    pour:['Une amende chiffrée permet de calculer un impact concret.'],
+    contre:['Les procédures judiciaires prennent souvent des mois, voire des années.'],
+    verifier:['Le montant en jeu vs la trésorerie de l\u2019entreprise','Si un appel est possible'] },
+  { name:'banque_centrale', horizon:'moyen', impact:'majeur',
+    keywords:['réserve fédérale','fed','banque centrale','taux directeur','taux d\u2019intérêt','politique monétaire'],
+    pour:['Les décisions de taux affectent tout le marché, pas un seul secteur.'],
+    contre:['Le marché anticipe généralement ces décisions des semaines à l\u2019avance.'],
+    verifier:['Si la décision correspond aux attentes','Le ton du discours qui l\u2019accompagne'] },
+  { name:'inflation', horizon:'moyen', impact:'modere',
+    keywords:['inflation','indice des prix','chômage','emploi non agricole','marché du travail'],
+    pour:['Ces indicateurs orientent les décisions futures des banques centrales.'],
+    contre:['Un seul chiffre mensuel est bruyant — la tendance compte plus.'],
+    verifier:['La tendance sur 3 à 6 mois','L\u2019écart par rapport aux attentes'] },
+  { name:'commerce', horizon:'moyen', impact:'modere',
+    keywords:['droits de douane','tarifs douaniers','guerre commerciale','accord commercial','sanctions économiques'],
+    pour:['Effet direct et chiffrable sur les marges des entreprises exposées.'],
+    contre:['Souvent utilisés comme outil de négociation, révisables rapidement.'],
+    verifier:['Le secteur précisément visé','Si des mesures de rétorsion sont annoncées'] },
+  { name:'election', horizon:'moyen', impact:'modere',
+    keywords:['élection','président élu','changement de gouvernement'],
+    pour:['Clarifie l\u2019orientation économique et fiscale à venir.'],
+    contre:['Les promesses de campagne ne se traduisent pas toujours en politiques appliquées.'],
+    verifier:['Les secteurs visés par les propositions','Le calendrier réaliste de mise en œuvre'] },
+  { name:'geopolitique', horizon:'long', impact:'majeur',
+    keywords:['géopolitique','guerre','invasion','conflit armé','tensions militaires','frappes'],
+    pour:['Un conflit prolongé peut redessiner durablement des chaînes d\u2019approvisionnement.'],
+    contre:['Les marchés intègrent souvent vite même les chocs géopolitiques majeurs.'],
+    verifier:['L\u2019exposition réelle de l\u2019entreprise à la zone concernée','La durée probable de la situation'] },
+  { name:'structurel', horizon:'long', impact:'modere',
+    keywords:['transition énergétique','intelligence artificielle','réforme des retraites','dette souveraine','réforme fiscale'],
+    pour:['Les tendances structurelles se jouent sur plusieurs années.'],
+    contre:['Le bon thème avec la mauvaise valorisation d\u2019entrée reste un mauvais investissement.'],
+    verifier:['Si l\u2019avantage concurrentiel est durable, pas seulement marketing','La valorisation actuelle vs la croissance réellement attendue'] },
+];
+const DEFAULT_RULE = { horizon:'moyen', impact:'mineur',
+  pour:['À situer dans le contexte du secteur avant de réagir.'],
+  contre:['Une nouvelle isolée, sans confirmation ni chiffres, justifie rarement une décision immédiate.'],
+  verifier:['Si d\u2019autres sources confirment l\u2019information','L\u2019impact chiffré, s\u2019il est mentionné'] };
+
+function matchRule(title){
+  const t = title.toLowerCase();
+  for(const rule of CATEGORY_RULES){ for(const kw of rule.keywords){ if(t.indexOf(kw)!==-1) return rule; } }
+  return DEFAULT_RULE;
+}
+function isGenericTitle(title){
+  const t = title.toLowerCase();
+  for(const rule of CATEGORY_RULES){ for(const kw of rule.keywords){ if(t.indexOf(kw)!==-1) return false; } }
+  return true;
+}
+function quickHorizon(title){ return matchRule(title).horizon; }
+function quickImpact(title){ return matchRule(title).impact; }
+const COMPANY_MAP = [
+  { kw:'amazon', ticker:'AMZN', secteur:'Commerce en ligne / Cloud (US)' },
+  { kw:'walmart', ticker:'WMT', secteur:'Grande distribution (US)' },
+  { kw:'apple', ticker:'AAPL', secteur:'Technologie grand public (US)' },
+  { kw:'microsoft', ticker:'MSFT', secteur:'Logiciel / Cloud (US)' },
+  { kw:'alphabet', ticker:'GOOGL', secteur:'Technologie / Publicité (US)' },
+  { kw:'google', ticker:'GOOGL', secteur:'Technologie / Publicité (US)' },
+  { kw:'meta', ticker:'META', secteur:'Réseaux sociaux / Publicité (US)' },
+  { kw:'tesla', ticker:'TSLA', secteur:'Véhicules électriques (US)' },
+  { kw:'nvidia', ticker:'NVDA', secteur:'Semi-conducteurs (US)' },
+  { kw:'netflix', ticker:'NFLX', secteur:'Streaming / Médias (US)' },
+  { kw:'jpmorgan', ticker:'JPM', secteur:'Services financiers (US)' },
+  { kw:'goldman sachs', ticker:'GS', secteur:'Services financiers (US)' },
+  { kw:'berkshire hathaway', ticker:'BRK.B', secteur:'Holding / Assurance (US)' },
+  { kw:'exxon', ticker:'XOM', secteur:'Énergie (US)' },
+  { kw:'chevron', ticker:'CVX', secteur:'Énergie (US)' },
+  { kw:'pfizer', ticker:'PFE', secteur:'Santé / Pharma (US)' },
+  { kw:'boeing', ticker:'BA', secteur:'Aéronautique (US)' },
+  { kw:'shopify', ticker:'SHOP', secteur:'Commerce en ligne (Canada)' },
+  { kw:'bce inc', ticker:'BCE', secteur:'Télécommunications (Canada)' },
+  { kw:'banque royale', ticker:'RY', secteur:'Services financiers (Canada)' },
+  { kw:'rbc', ticker:'RY', secteur:'Services financiers (Canada)' },
+  { kw:'banque td', ticker:'TD', secteur:'Services financiers (Canada)' },
+  { kw:'couche-tard', ticker:'ATD', secteur:'Commerce de détail (Canada)' },
+  { kw:'bombardier', ticker:'BBD', secteur:'Aéronautique (Canada)' },
+  { kw:'cgi', ticker:'GIB', secteur:'Technologie / Services-conseils (Canada)' },
+  { kw:'samsung', ticker:'005930.KS', secteur:'Technologie (Asie)' },
+  { kw:'alibaba', ticker:'BABA', secteur:'Commerce en ligne (Chine)' },
+  { kw:'lvmh', ticker:'MC.PA', secteur:'Luxe (Europe)' },
+  { kw:'total energies', ticker:'TTE', secteur:'Énergie (Europe)' },
+];
+const POS_WORDS = ['dépasse les attentes','dépasse','record','forte hausse','bond de','grimpe','meilleur que prévu','au-delà des attentes','bénéfice en hausse','croissance robuste','rebond','en hausse','optimiste','solides résultats'];
+const NEG_WORDS = ['chute','plonge','déçoit','manque les attentes','avertissement sur résultats','recul','perte','licenciements','effondrement','dégringole','s\u2019effondre','inquiétudes','en baisse','plombe','déficit'];
+
+function detectCompanies(text){
+  const t = text.toLowerCase();
+  const found = [];
+  COMPANY_MAP.forEach(c => { if(t.indexOf(c.kw)!==-1) found.push(c); });
+  return found;
+}
+function detectOrientation(text){
+  const t = text.toLowerCase();
+  let pos=0, neg=0;
+  POS_WORDS.forEach(w => { if(t.indexOf(w)!==-1) pos++; });
+  NEG_WORDS.forEach(w => { if(t.indexOf(w)!==-1) neg++; });
+  if(pos>0 && neg>0) return 'mixte';
+  if(pos>0) return 'positif';
+  if(neg>0) return 'negatif';
+  return 'neutre';
+}
+function quickAnalysis(article){
+  const rule = matchRule(article.title);
+  const fullText = article.title + ' ' + (article.description||'');
+  const companies = detectCompanies(fullText);
+  const secteurs = Array.from(new Set(companies.map(c=>c.secteur)));
+  const tickers = Array.from(new Set(companies.map(c=>c.ticker)));
+  const orientation = detectOrientation(fullText);
+  const extrait = article.description && article.description.length > 8
+    ? (article.description.length > 320 ? article.description.slice(0,320) + '…' : article.description)
+    : 'Aucun extrait disponible pour cette source — seul le titre est fourni par le flux.';
+  return {
+    resume: extrait,
+    resume_est_extrait: !!(article.description && article.description.length > 8),
+    secteurs_marches: secteurs, entreprises_tickers: tickers,
+    orientation: orientation, horizon: rule.horizon, impact: rule.impact,
+    niveau_confiance: secteurs.length ? 'moyen' : 'faible',
+    contexte: 'Ce type d\u2019événement a généralement les implications suivantes, sur la base du titre et du texte disponibles :',
+    pour_agir_maintenant: rule.pour, pour_attendre: rule.contre, a_verifier: rule.verifier,
+    mise_en_garde: 'Cette lecture est générée automatiquement à partir du texte de la nouvelle — elle ne constitue pas un conseil d\u2019achat ou de vente personnalisé.',
+  };
+}
+
+let state = {
+  watchlist: [], seenIds: [], notifOn:false, soundOn:false, notifyLevel:'majeur',
+  refreshMinutes:3, activeFilter:'all', articles:[], lastRefresh:null,
+  selectedId:null, analysisCache:{}, theme:'ardoise', reduceNoise:true,
+  page:'news', chatHistories:{}, quoteCache:{},
+};
+const STORAGE_KEY = 'sentinelle-settings-v4';
+
+async function loadState(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){
+      const saved = JSON.parse(res.value);
+      Object.assign(state, saved, { articles:[], selectedId:null });
+    }
+  }catch(e){}
+}
+async function saveState(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify({
+      watchlist:state.watchlist, seenIds:state.seenIds.slice(-300), notifOn:state.notifOn,
+      soundOn:state.soundOn, notifyLevel:state.notifyLevel, refreshMinutes:state.refreshMinutes,
+      theme:state.theme, reduceNoise:state.reduceNoise,
+    }), false);
+  }catch(e){}
+}
+async function cacheAnalysis(id, data){
+  state.analysisCache[id] = data;
+  try{ await window.storage.set('analyse:' + hashId(id), JSON.stringify(data), false); }catch(e){}
+}
+async function getCachedAnalysis(id){
+  if(state.analysisCache[id]) return state.analysisCache[id];
+  try{
+    const res = await window.storage.get('analyse:' + hashId(id), false);
+    if(res && res.value){ const d = JSON.parse(res.value); state.analysisCache[id] = d; return d; }
+  }catch(e){}
+  return null;
+}
+function hashId(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = ((h<<5)-h) + str.charCodeAt(i); h |= 0; }
+  return 'a' + Math.abs(h);
+}
+
+function googleNewsUrl(query){
+  return 'https://news.google.com/rss/search?q=' + encodeURIComponent(query) + '&hl=fr&gl=FR&ceid=FR:fr';
+}
+function baseQueries(){
+  const qs = [
+    'bourse OR "marchés financiers" OR "Wall Street"',
+    'Fed OR "banque centrale" OR inflation OR "taux d\u2019intérêt"',
+    '"résultats trimestriels" OR bénéfices OR "chiffre d\u2019affaires trimestriel"',
+    'géopolitique OR guerre OR sanctions OR "droits de douane"',
+  ];
+  if(state.watchlist.length){
+    qs.push(state.watchlist.map(w => '"'+w+'"').join(' OR ') + ' action bourse');
+  }
+  return qs;
+}
+async function fetchOneFeed(query){
+  const rssUrl = googleNewsUrl(query);
+  const apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl);
+  const resp = await fetch(apiUrl);
+  if(!resp.ok) throw new Error('HTTP ' + resp.status);
+  const data = await resp.json();
+  if(data.status !== 'ok') throw new Error(data.message || 'Erreur du flux');
+  return data.items || [];
+}
+function articleId(item){ return item.link || item.title; }
+function stripHtml(s){ return (s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); }
+
+async function refreshFeeds(){
+  setStatus('busy','actualisation…');
+  try{
+    const queries = baseQueries();
+    const results = await Promise.allSettled(queries.map(fetchOneFeed));
+    let items = [];
+    results.forEach(r => { if(r.status==='fulfilled') items = items.concat(r.value); });
+    if(items.length===0 && results.every(r=>r.status==='rejected')) throw new Error('Aucun flux n\u2019a répondu');
+
+    const seen = new Set(); const dedup = [];
+    for(const it of items){ const id = articleId(it); if(seen.has(id)) continue; seen.add(id); dedup.push(it); }
+    dedup.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+    const enriched = dedup.slice(0,80).map(it => {
+      const id = articleId(it);
+      const isWatch = state.watchlist.some(w => it.title.toLowerCase().indexOf(w.toLowerCase())!==-1);
+      const image = it.thumbnail || (it.enclosure && it.enclosure.link) || null;
+      const generic = isGenericTitle(it.title);
+      return {
+        id, title: it.title, link: it.link,
+        description: stripHtml(it.description || it.content || ''),
+        source: it.author || (it.title.split(' - ').pop()),
+        pubDate: it.pubDate, watch: isWatch, image: image, generic: generic,
+        horizon: quickHorizon(it.title), impact: quickImpact(it.title),
+        orient: null,
+      };
+    }).filter(a => {
+      if(a.watch) return true;
+      if(!state.reduceNoise) return true;
+      return !a.generic && a.impact !== 'mineur';
+    });
+
+    const isFirstLoad = state.lastRefresh === null;
+    const newOnes = enriched.filter(a => state.seenIds.indexOf(a.id) === -1);
+    if(!isFirstLoad) newOnes.forEach(a => maybeNotify(a));
+    state.seenIds = Array.from(new Set(state.seenIds.concat(enriched.map(a=>a.id)))).slice(-500);
+
+    state.articles = enriched;
+    state.lastRefresh = new Date();
+    setStatus('ok', state.articles.length + ' nouvelles importantes · maj ' + state.lastRefresh.toLocaleTimeString('fr-FR'));
+    saveState();
+    renderFilterbar();
+    renderList();
+  }catch(e){
+    console.error(e);
+    setStatus('err', 'échec — nouvel essai dans ' + state.refreshMinutes + ' min');
+  }
+}
+
+function maybeNotify(article){
+  const should = article.impact==='majeur' || (state.notifyLevel==='majeur+modere' && article.impact==='modere');
+  if(!should) return;
+  if(state.notifOn && 'Notification' in window && Notification.permission==='granted'){
+    try{ new Notification('Sentinelle', { body: article.title }); }catch(e){}
+  }
+  if(state.soundOn) playBeep();
+}
+let audioCtx;
+function playBeep(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.frequency.value=740; g.gain.value=0.06; o.start(); o.stop(audioCtx.currentTime+0.18);
+  }catch(e){}
+}
+
+function setStatus(kind, text){
+  const dot = document.getElementById('statusDot');
+  dot.className = 'dot' + (kind==='ok' ? '' : kind==='busy' ? ' busy' : ' err');
+  document.getElementById('statusText').textContent = text;
+}
+
+// ---------- Rendu : barre de filtres ----------
+const FILTERS = [
+  { id:'all', label:'Tout' },
+  { id:'court', label:'Court terme' },
+  { id:'moyen', label:'Moyen terme' },
+  { id:'long', label:'Long terme' },
+  { id:'watch', label:'★ Suivi' },
+];
+function renderFilterbar(){
+  const counts = { all: state.articles.length, court:0, moyen:0, long:0, watch:0 };
+  state.articles.forEach(a => { counts[a.horizon]++; if(a.watch) counts.watch++; });
+  document.getElementById('filterbar').innerHTML = FILTERS.map(f =>
+    '<button class="chip-filter ' + (state.activeFilter===f.id?'active':'') + '" data-f="' + f.id + '">' +
+      f.label + (counts[f.id] ? ' <span class="n">' + counts[f.id] + '</span>' : '') + '</button>'
+  ).join('');
+  document.querySelectorAll('.chip-filter').forEach(b => {
+    b.onclick = () => { state.activeFilter = b.dataset.f; renderFilterbar(); renderList(); };
+  });
+}
+
+function timeAgo(dateStr){
+  const d = new Date(dateStr);
+  const diffMin = Math.round((Date.now()-d.getTime())/60000);
+  if(diffMin<1) return "à l'instant";
+  if(diffMin<60) return 'il y a ' + diffMin + ' min';
+  const h = Math.round(diffMin/60);
+  if(h<24) return 'il y a ' + h + ' h';
+  return d.toLocaleDateString('fr-FR');
+}
+const ORIENT_GLYPH = { positif:'▲', negatif:'▼', mixte:'◆', neutre:'–' };
+const ORIENT_LABEL = { positif:'Perçu positivement', negatif:'Perçu négativement', mixte:'Signal mixte', neutre:'Informatif / neutre' };
+const HORIZON_LABEL = { court:'Court terme', moyen:'Moyen terme', long:'Long terme' };
+
+function filteredArticles(){
+  if(state.activeFilter==='all') return state.articles;
+  if(state.activeFilter==='watch') return state.articles.filter(a=>a.watch);
+  return state.articles.filter(a=>a.horizon===state.activeFilter);
+}
+
+function renderList(){
+  const pane = document.getElementById('listPane');
+  const list = filteredArticles();
+  if(state.lastRefresh===null){
+    pane.innerHTML = '<div class="empty-pane"><div class="big">Chargement…</div>Première synchronisation en cours.</div>';
+    return;
+  }
+  if(list.length===0){
+    pane.innerHTML = '<div class="empty-pane"><div class="big">Rien ici</div>Essaie un autre filtre ou ajuste ta liste de suivi.</div>';
+    return;
+  }
+  pane.innerHTML = '<div class="listhead">' + list.length + ' nouvelle' + (list.length>1?'s':'') + '</div>' +
+    list.map(a => {
+      const orientHtml = a.orient ? '<span class="orient ' + a.orient + '">' + ORIENT_GLYPH[a.orient] + '</span>' : '';
+      return '<button class="row ' + (state.selectedId===a.id?'selected':'') + '" data-id="' + encodeURIComponent(a.id) + '">' +
+        '<div class="rowtop">' +
+          '<span class="tag h-' + a.horizon + '">' + HORIZON_LABEL[a.horizon] + '</span>' +
+          (a.impact==='majeur' ? '<span class="tag imp-majeur">Majeur</span>' : '') +
+          (a.watch ? '<span class="star">★</span>' : '') +
+          orientHtml +
+        '</div>' +
+        '<div class="rowtitle">' + a.title + '</div>' +
+        '<div class="rowmeta">' + (a.source||'') + ' · ' + timeAgo(a.pubDate) + '</div>' +
+      '</button>';
+    }).join('');
+  pane.querySelectorAll('.row').forEach(r => {
+    r.onclick = () => selectArticle(decodeURIComponent(r.dataset.id));
+  });
+}
+
+async function selectArticle(id){
+  state.selectedId = id;
+  document.getElementById('mainArea').classList.add('showing-detail');
+  renderList();
+  const article = state.articles.find(a => a.id===id);
+  if(!article) return;
+
+  const local = quickAnalysis(article);
+  article.orient = local.orientation;
+  renderList();
+  if(state.selectedId===id) renderDetailFull(article, local, null);
+}
+
+function backToList(){
+  state.selectedId = null;
+  document.getElementById('mainArea').classList.remove('showing-detail');
+}
+
+function detailHeader(article){
+  return '<button class="back-btn" id="backBtn">← Retour à la liste</button>' +
+    '<div class="detail-badges">' +
+      '<span class="tag h-' + article.horizon + '">' + HORIZON_LABEL[article.horizon] + '</span>' +
+      (article.impact==='majeur' ? '<span class="tag imp-majeur">Impact majeur</span>' : '') +
+      (article.watch ? '<span class="star">★ liste de suivi</span>' : '') +
+    '</div>' +
+    '<h1 class="detail-title">' + article.title + '</h1>' +
+    '<div class="detail-meta"><span>' + (article.source||'Source') + '</span><span>' + timeAgo(article.pubDate) + '</span><a href="' + article.link + '" target="_blank" rel="noopener">Lire la source originale ↗</a></div>';
+}
+
+function renderDetailSkeleton(article){
+  const pane = document.getElementById('detailPane');
+  pane.innerHTML = '<div class="detail-inner">' + detailHeader(article) +
+    '<div class="sk-line" style="width:70%;height:20px;"></div>' +
+    '<div class="sk-line" style="width:100%;"></div><div class="sk-line" style="width:95%;"></div><div class="sk-line" style="width:60%;"></div>' +
+    '<div class="sk-line" style="width:40%;margin-top:20px;"></div>' +
+  '</div>';
+  wireDetailBack();
+}
+
+function confBars(level){
+  const n = level==='eleve' ? 3 : level==='moyen' ? 2 : 1;
+  let html = '<div class="bars">';
+  for(let i=0;i<3;i++) html += '<div class="bar' + (i<n?' on':'') + '"></div>';
+  html += '</div>';
+  const lbl = level==='eleve' ? 'Confiance élevée' : level==='moyen' ? 'Confiance moyenne' : 'Confiance limitée';
+  return '<div class="confidence">' + html + '<span>' + lbl + ' — information disponible ' + (level==='faible'?'limitée':'suffisante') + '</span></div>';
+}
+
+function renderDetailFull(article, a){
+  const pane = document.getElementById('detailPane');
+  const orient = a.orientation || 'neutre';
+  const secteurs = (a.secteurs_marches||[]).map(s => '<span class="pill">' + s + '</span>').join('');
+  const tickers = a.entreprises_tickers || [];
+  const tickerPills = tickers.map(s => '<span class="pill">' + s + '</span>').join('');
+  const quoteCards = tickers.map(t => {
+    const safe = t.replace(/[^A-Za-z0-9]/g,'_');
+    return '<div class="quote-card" id="quote-' + safe + '"><div class="q-sym">' + t + '</div><div class="q-price">Chargement…</div></div>';
+  }).join('');
+
+  const synthese = 'Cette nouvelle est lue comme <strong>' + ORIENT_LABEL[orient].toLowerCase() + '</strong>, avec un impact ' +
+    (a.impact==='majeur'?'<strong>majeur</strong>':a.impact==='modere'?'modéré':'mineur') + ' attendu sur un horizon <strong>' + HORIZON_LABEL[a.horizon].toLowerCase() + '</strong>' +
+    (tickers.length ? ', concernant surtout ' + tickers.join(', ') : '') +
+    '. Niveau de confiance de cette lecture : ' + (a.niveau_confiance==='eleve'?'élevé':a.niveau_confiance==='moyen'?'moyen':'limité') + '.';
+
+  pane.innerHTML = '<div class="detail-inner">' + detailHeader(article) +
+
+    '<div class="orient-banner ' + orient + '">' +
+      '<span class="glyph ' + orient + '">' + ORIENT_GLYPH[orient] + '</span>' +
+      '<div class="txt"><div class="t1">' + ORIENT_LABEL[orient] + '</div>' +
+      '<div class="t2">Lecture du sentiment de marché pour cette nouvelle — pas une prédiction du mouvement réel du cours</div></div>' +
+    '</div>' +
+
+    '<div class="section trading-synthese"><h4>Synthèse pour le trading</h4><p>' + synthese + '</p>' +
+      (quoteCards ? '<div class="quote-row">' + quoteCards + '</div>' : '') +
+    '</div>' +
+
+    '<div class="section"><h4>Résumé</h4><p>' + a.resume + '</p></div>' +
+
+    (secteurs ? '<div class="section"><h4>Marchés / secteurs concernés</h4><div class="taglist">' + secteurs + '</div></div>' : '') +
+    (tickerPills ? '<div class="section"><h4>Entreprises mentionnées</h4><div class="taglist">' + tickerPills + '</div></div>' : '') +
+
+    '<div class="section"><h4>Pourquoi ça compte</h4><p>' + a.contexte + '</p></div>' +
+
+    '<div class="section"><h4>Cadre de décision</h4><div class="twocol">' +
+      '<div class="box pour"><strong>Pour agir maintenant</strong><ul>' + (a.pour_agir_maintenant||[]).map(x=>'<li>'+x+'</li>').join('') + '</ul></div>' +
+      '<div class="box contre"><strong>Pour attendre</strong><ul>' + (a.pour_attendre||[]).map(x=>'<li>'+x+'</li>').join('') + '</ul></div>' +
+    '</div></div>' +
+
+    '<div class="section"><h4>À vérifier avant toute décision</h4><ul>' + (a.a_verifier||[]).map(x=>'<li>'+x+'</li>').join('') + '</ul></div>' +
+
+    '<div class="section">' + confBars(a.niveau_confiance) +
+      '<div class="warning-box">' + a.mise_en_garde + '</div>' +
+    '</div>' +
+
+    '<div class="chat-box"><h4 style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:0.03em;color:var(--muted);margin:0 0 12px;">Poser une question sur cette nouvelle</h4>' +
+      '<div class="chat-log" id="chatLog"></div>' +
+      '<div class="chat-input-row"><input type="text" id="chatInput" placeholder="Ex. Pourquoi cette nouvelle compte-t-elle pour le secteur ?"><button id="chatSend">Envoyer</button></div>' +
+      '<div class="chat-hint" id="chatHint"></div>' +
+    '</div>' +
+
+    (article.image ? '<div class="section"><h4>Image de la nouvelle</h4><img src="' + article.image + '" alt="" class="detail-photo" onerror="this.parentElement.remove()"></div>' : '') +
+  '</div>';
+  wireDetailBack();
+  wireChat(article);
+  if(tickers.length) loadQuotes(tickers);
+}
+async function loadQuotes(tickers){
+  tickers.forEach(async (t) => {
+    const safe = t.replace(/[^A-Za-z0-9]/g,'_');
+    const el = document.getElementById('quote-' + safe);
+    if(!el) return;
+    try{
+      const resp = await fetch('/api/quote?symbol=' + encodeURIComponent(t));
+      if(!resp.ok) throw new Error('HTTP ' + resp.status);
+      const q = await resp.json();
+      if(q.price==null) throw new Error('indisponible');
+      const pct = q.changePercent!=null ? q.changePercent.toFixed(2) : null;
+      const dir = pct!=null ? (pct>0?'up':pct<0?'down':'flat') : 'flat';
+      const priceEl = el.querySelector('.q-price');
+      priceEl.className = 'q-price ' + dir;
+      priceEl.innerHTML = q.price.toFixed(2) + (pct!=null ? ' <span class="q-pct">' + (pct>0?'+':'') + pct + '%</span>' : '');
+    }catch(e){
+      const priceEl = el.querySelector('.q-price');
+      priceEl.textContent = 'Indisponible';
+    }
+  });
+}
+
+function wireDetailBack(){
+  const b = document.getElementById('backBtn');
+  if(b) b.onclick = backToList;
+}
+
+function wireChat(article){
+  const hist = state.chatHistories[article.id] || [];
+  renderChatLog(hist);
+  document.getElementById('chatHint').textContent = '';
+  const send = async () => {
+    const inp = document.getElementById('chatInput');
+    const q = inp.value.trim();
+    if(!q) return;
+    inp.value = '';
+    hist.push({ role:'user', text:q });
+    state.chatHistories[article.id] = hist;
+    renderChatLog(hist);
+    hist.push({ role:'assistant', text:'…' });
+    renderChatLog(hist);
+    try{
+      const resp = await fetch('/api/chat', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ question:q, article:{ title:article.title, description:article.description, source:article.source }, history: hist.slice(0,-1) })
+      });
+      if(!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      hist[hist.length-1] = { role:'assistant', text: data.reply || 'Réponse vide du service.' };
+    }catch(e){
+      hist[hist.length-1] = { role:'assistant', text:'Le chat n\u2019est pas encore actif — il s\u2019active une fois le site déployé avec son serveur (voir la conversation). Détail : ' + (e.message||e) };
+    }
+    renderChatLog(hist);
+  };
+  document.getElementById('chatSend').onclick = send;
+  document.getElementById('chatInput').onkeydown = (e) => { if(e.key==='Enter') send(); };
+}
+function renderChatLog(hist){
+  const log = document.getElementById('chatLog');
+  if(!log) return;
+  log.innerHTML = hist.map(m => '<div class="chat-msg ' + m.role + '">' + m.text + '</div>').join('');
+  log.scrollTop = log.scrollHeight;
+}
+
+// ---------- Réglages ----------
+function renderWatchChips(){
+  const el = document.getElementById('watchChips');
+  el.innerHTML = state.watchlist.map((w,i) => '<span class="chip">' + w + '<button data-i="' + i + '">✕</button></span>').join('') || '<span class="note">Aucune entrée.</span>';
+  el.querySelectorAll('button[data-i]').forEach(b => {
+    b.onclick = () => { state.watchlist.splice(parseInt(b.dataset.i),1); saveState(); renderWatchChips(); refreshFeeds(); };
+  });
+}
+const THEMES = [
+  { id:'ardoise', label:'Ardoise & Laiton', colors:['#0B1016','#CBA135','#3E8E79'] },
+  { id:'emeraude', label:'Encre & Émeraude', colors:['#0A1512','#3FAE86','#C4534A'] },
+  { id:'minuit', label:'Minuit', colors:['#080B14','#5C9FE0','#C4534A'] },
+  { id:'papier', label:'Papier & Vermillon', colors:['#F3EFE4','#B0432D','#2E6E5C'] },
+];
+function applyTheme(){
+  document.body.className = state.theme==='ardoise' ? '' : 'theme-' + state.theme;
+}
+function renderThemeGrid(){
+  const el = document.getElementById('themeGrid');
+  el.innerHTML = THEMES.map(t =>
+    '<div class="theme-swatch ' + (state.theme===t.id?'active':'') + '" data-theme="' + t.id + '">' +
+      '<div class="dots">' + t.colors.map(c=>'<span style="background:'+c+';"></span>').join('') + '</div>' +
+      '<div class="lbl">' + t.label + '</div>' +
+    '</div>'
+  ).join('');
+  el.querySelectorAll('.theme-swatch').forEach(sw => {
+    sw.onclick = () => { state.theme = sw.dataset.theme; applyTheme(); saveState(); renderThemeGrid(); };
+  });
+}
+
+function openSettings(){
+  document.getElementById('settingsOverlay').classList.add('open');
+  renderWatchChips();
+  renderThemeGrid();
+  document.getElementById('notifyLevel').value = state.notifyLevel;
+  document.getElementById('refreshRate').value = String(state.refreshMinutes);
+  document.getElementById('switchNotif').className = 'switch' + (state.notifOn?' on':'');
+  document.getElementById('switchSound').className = 'switch' + (state.soundOn?' on':'');
+  document.getElementById('switchReduceNoise').className = 'switch' + (state.reduceNoise?' on':'');
+  const perm = ('Notification' in window) ? Notification.permission : 'non supporté';
+  document.getElementById('notifPermTxt').textContent = 'Statut : ' + perm;
+}
+function wireSettings(){
+  document.getElementById('openSettings').onclick = openSettings;
+  document.getElementById('closeSettings').onclick = () => document.getElementById('settingsOverlay').classList.remove('open');
+  document.getElementById('addWatch').onclick = () => {
+    const inp = document.getElementById('watchInput'); const v = inp.value.trim();
+    if(v && state.watchlist.indexOf(v)===-1){ state.watchlist.push(v); inp.value=''; saveState(); renderWatchChips(); refreshFeeds(); }
+  };
+  document.getElementById('watchInput').onkeydown = (e) => { if(e.key==='Enter') document.getElementById('addWatch').click(); };
+  document.getElementById('switchNotif').onclick = async function(){
+    if(!state.notifOn && 'Notification' in window && Notification.permission!=='granted'){
+      const perm = await Notification.requestPermission();
+      if(perm!=='granted') return;
+    }
+    state.notifOn = !state.notifOn; this.className='switch'+(state.notifOn?' on':''); saveState();
+  };
+  document.getElementById('switchSound').onclick = function(){
+    state.soundOn = !state.soundOn; this.className='switch'+(state.soundOn?' on':''); saveState();
+  };
+  document.getElementById('switchReduceNoise').onclick = function(){
+    state.reduceNoise = !state.reduceNoise; this.className='switch'+(state.reduceNoise?' on':''); saveState(); refreshFeeds();
+  };
+  document.getElementById('notifyLevel').onchange = (e) => { state.notifyLevel = e.target.value; saveState(); };
+  document.getElementById('refreshRate').onchange = (e) => { state.refreshMinutes = parseInt(e.target.value); saveState(); scheduleRefresh(); };
+
+  document.querySelectorAll('.pagenav-btn').forEach(btn => {
+    btn.onclick = () => {
+      state.page = btn.dataset.page;
+      document.querySelectorAll('.pagenav-btn').forEach(b => b.classList.toggle('active', b===btn));
+      const isCal = state.page === 'calendar';
+      document.getElementById('mainArea').style.display = isCal ? 'none' : 'flex';
+      document.getElementById('filterbar').style.display = isCal ? 'none' : 'flex';
+      document.getElementById('calendarPage').classList.toggle('active', isCal);
+      if(isCal) loadCalendar();
+    };
+  });
+}
+
+// ---------- Calendrier économique ----------
+const CAL_IMPACT_RULES = [
+  { kw:['taux directeur','fed funds','décision de taux','banque centrale'],
+    note:'Une hausse de taux plus forte que prévu est généralement perçue comme baissière pour les actions (coût du capital plus élevé) ; une baisse plus forte que prévu est généralement perçue comme haussière.' },
+  { kw:['inflation','indice des prix','cpi'],
+    note:'Une inflation plus élevée que prévu est généralement perçue comme baissière pour les actions (crainte d\u2019un resserrement monétaire) ; plus faible que prévu, plutôt haussière.' },
+  { kw:['emploi','chômage','nonfarm','payrolls','emplois non agricoles'],
+    note:'Un marché de l\u2019emploi plus fort que prévu est à double tranchant : bon signe économique, mais parfois perçu comme baissier à court terme s\u2019il ravive les craintes de hausse des taux.' },
+  { kw:['pib','croissance','gdp'],
+    note:'Une croissance plus forte que prévu est généralement perçue comme haussière pour les actions, sauf si elle ravive des craintes de surchauffe/inflation.' },
+  { kw:['ventes au détail','retail sales'],
+    note:'Des ventes plus fortes que prévu sont généralement perçues comme haussières pour les valeurs de consommation.' },
+  { kw:['pmi','indice manufacturier','confiance'],
+    note:'Un indice au-dessus des attentes (et au-dessus de 50 pour un PMI) est généralement perçu comme haussier pour les actions du secteur concerné.' },
+];
+function calImpactNote(eventName){
+  const t = (eventName||'').toLowerCase();
+  for(const r of CAL_IMPACT_RULES){ for(const kw of r.kw){ if(t.indexOf(kw)!==-1) return r.note; } }
+  return 'Effet variable selon que le résultat dépasse ou non les attentes — comparer « Réel » à « Prévision » une fois publiés.';
+}
+function calDirection(ev){
+  if(ev.actual===null || ev.actual===undefined || ev.estimate===null || ev.estimate===undefined) return null;
+  const t = (ev.event||'').toLowerCase();
+  const beatIsBad = ['inflation','indice des prix','cpi','taux directeur','fed funds'].some(k => t.indexOf(k)!==-1);
+  const beat = ev.actual > ev.estimate;
+  if(ev.actual === ev.estimate) return 'mixte';
+  if(beatIsBad) return beat ? 'baisse' : 'hausse';
+  return beat ? 'hausse' : 'baisse';
+}
+async function loadCalendar(){
+  const pane = document.getElementById('calendarPage');
+  pane.innerHTML = '<div class="cal-empty"><div class="big">Chargement du calendrier…</div></div>';
+  try{
+    const resp = await fetch('/api/calendar');
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const events = data.events || [];
+    if(!events.length){ pane.innerHTML = '<div class="cal-empty"><div class="big">Aucun événement retourné</div>Le service de calendrier n\u2019a rien renvoyé pour la période demandée.</div>'; return; }
+
+    const byDay = {};
+    events.forEach(ev => {
+      const day = (ev.time||ev.date||'').slice(0,10);
+      if(!byDay[day]) byDay[day] = [];
+      byDay[day].push(ev);
+    });
+    const days = Object.keys(byDay).sort();
+    pane.innerHTML = days.map(day => {
+      const dLabel = new Date(day+'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+      const rows = byDay[day].map(ev => {
+        const dir = calDirection(ev);
+        const dirHtml = dir ? '<span class="cal-dir ' + dir + '">' + (dir==='hausse'?'▲ Haussier':dir==='baisse'?'▼ Baissier':'◆ Mixte') + '</span>' : '<span class="cal-dir mixte">En attente</span>';
+        const impN = ev.impact==='high' ? 3 : ev.impact==='medium' ? 2 : 1;
+        let dots = '<div class="cal-imp">'; for(let i=0;i<3;i++) dots += '<span class="' + (i<impN?'on':'') + '"></span>'; dots += '</div>';
+        const time = (ev.time||'').slice(11,16) || '—';
+        return '<tr><td class="cal-time">' + time + '</td><td>' + (ev.country||'') + '</td><td>' + (ev.event||'') + '<div class="note" style="margin-top:3px;max-width:340px;">' + calImpactNote(ev.event) + '</div></td><td>' + dots + '</td>' +
+          '<td class="cal-values">Préc. ' + (ev.prev??'—') + ' · Prév. ' + (ev.estimate??'—') + (ev.actual!=null?' · Réel ' + ev.actual:'') + '</td><td>' + dirHtml + '</td></tr>';
+      }).join('');
+      return '<div class="cal-day"><h3>' + dLabel + '</h3><table class="cal-table"><thead><tr><th>Heure</th><th>Pays</th><th>Événement</th><th>Import.</th><th>Valeurs</th><th>Impact probable</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }).join('');
+  }catch(e){
+    console.error(e);
+    pane.innerHTML = '<div class="cal-empty"><div class="big">Chargement impossible</div>' + (e.message||e) + '<br><br>Si le site est ouvert comme simple fichier (pas encore déployé avec son serveur), c\u2019est normal — cette fonction s\u2019active une fois le backend en ligne (voir la conversation).</div>';
+  }
+}
+
+function tickClock(){
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+let refreshTimer = null;
+function scheduleRefresh(){
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(refreshFeeds, state.refreshMinutes*60000);
+}
+
+function setAppleIcon(){
+  try{
+    const c = document.createElement('canvas'); c.width=180; c.height=180;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#0B1016'; ctx.fillRect(0,0,180,180);
+    ctx.fillStyle = '#CBA135'; ctx.font = '700 96px Georgia, serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('S', 90, 100);
+    const link = document.createElement('link');
+    link.rel = 'apple-touch-icon'; link.href = c.toDataURL('image/png');
+    document.head.appendChild(link);
+  }catch(e){}
+}
+
+(async function init(){
+  setAppleIcon();
+  wireSettings();
+  await loadState();
+  applyTheme();
+  renderFilterbar();
+  renderList();
+  tickClock(); setInterval(tickClock, 1000);
+  await refreshFeeds();
+  scheduleRefresh();
+})();
+
+})();
+</script>
