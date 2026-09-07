@@ -120,7 +120,7 @@
 
   @media (max-width: 860px){
     .list-pane{ width:100%; border-right:none; }
-    .detail-pane{ display:none; position:fixed; inset:0; top:0; background:var(--ink); z-index:20; overflow-y:auto; }
+    .detail-pane{ display:none; position:fixed; top:var(--topbar-height, 60px); right:0; bottom:0; left:0; background:var(--ink); z-index:20; overflow-y:auto; }
     .main.showing-detail .list-pane{ display:none; }
     .main.showing-detail .detail-pane{ display:block; }
   }
@@ -1137,6 +1137,11 @@ function scheduleRefresh(){
   refreshTimer = setInterval(refreshFeeds, state.refreshMinutes*60000);
 }
 
+function syncTopbarHeight(){
+  const topbar = document.querySelector('.topbar');
+  if(topbar) document.documentElement.style.setProperty('--topbar-height', topbar.offsetHeight + 'px');
+}
+
 function setAppleIcon(){
   try{
     const c = document.createElement('canvas'); c.width=180; c.height=180;
@@ -1153,6 +1158,8 @@ function setAppleIcon(){
 
 (async function init(){
   setAppleIcon();
+  syncTopbarHeight();
+  window.addEventListener('resize', syncTopbarHeight);
   wireSettings();
   await loadState();
   applyTheme();
