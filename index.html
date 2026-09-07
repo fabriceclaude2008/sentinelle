@@ -423,8 +423,8 @@
     </div>
 
     <div class="field-block">
-      <h3>Calendrier économique &amp; cours en direct</h3>
-      <div class="note">Alimentés automatiquement par le serveur du site — aucune clé à entrer ici.</div>
+      <h3>Calendrier économique & cours en direct</h3>
+      <div class="note">Le calendrier économique est affiché via un widget Myfxbook intégré — aucune clé à configurer. Les cours en direct concernant ta liste de suivi sont alimentés par le serveur du site, sans clé à entrer ici.</div>
     </div>
 
     <div class="field-block">
@@ -1062,69 +1062,19 @@ function wireSettings(){
   });
 }
 
-// ---------- Calendrier économique ----------
-const CAL_IMPACT_RULES = [
-  { kw:['taux directeur','fed funds','décision de taux','banque centrale'],
-    note:'Une hausse de taux plus forte que prévu est généralement perçue comme baissière pour les actions (coût du capital plus élevé) ; une baisse plus forte que prévu est généralement perçue comme haussière.' },
-  { kw:['inflation','indice des prix','cpi'],
-    note:'Une inflation plus élevée que prévu est généralement perçue comme baissière pour les actions (crainte d\u2019un resserrement monétaire) ; plus faible que prévu, plutôt haussière.' },
-  { kw:['emploi','chômage','nonfarm','payrolls','emplois non agricoles'],
-    note:'Un marché de l\u2019emploi plus fort que prévu est à double tranchant : bon signe économique, mais parfois perçu comme baissier à court terme s\u2019il ravive les craintes de hausse des taux.' },
-  { kw:['pib','croissance','gdp'],
-    note:'Une croissance plus forte que prévu est généralement perçue comme haussière pour les actions, sauf si elle ravive des craintes de surchauffe/inflation.' },
-  { kw:['ventes au détail','retail sales'],
-    note:'Des ventes plus fortes que prévu sont généralement perçues comme haussières pour les valeurs de consommation.' },
-  { kw:['pmi','indice manufacturier','confiance'],
-    note:'Un indice au-dessus des attentes (et au-dessus de 50 pour un PMI) est généralement perçu comme haussier pour les actions du secteur concerné.' },
-];
-function calImpactNote(eventName){
-  const t = (eventName||'').toLowerCase();
-  for(const r of CAL_IMPACT_RULES){ for(const kw of r.kw){ if(t.indexOf(kw)!==-1) return r.note; } }
-  return 'Effet variable selon que le résultat dépasse ou non les attentes — comparer « Réel » à « Prévision » une fois publiés.';
-}
-function calDirection(ev){
-  if(ev.actual===null || ev.actual===undefined || ev.estimate===null || ev.estimate===undefined) return null;
-  const t = (ev.event||'').toLowerCase();
-  const beatIsBad = ['inflation','indice des prix','cpi','taux directeur','fed funds'].some(k => t.indexOf(k)!==-1);
-  const beat = ev.actual > ev.estimate;
-  if(ev.actual === ev.estimate) return 'mixte';
-  if(beatIsBad) return beat ? 'baisse' : 'hausse';
-  return beat ? 'hausse' : 'baisse';
-}
-async function loadCalendar(){
+function loadCalendar(){
   const pane = document.getElementById('calendarPage');
-  pane.innerHTML = '<div class="cal-empty"><div class="big">Chargement du calendrier…</div></div>';
-  try{
-    const resp = await fetch('/api/calendar');
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-    const events = data.events || [];
-    if(!events.length){ pane.innerHTML = '<div class="cal-empty"><div class="big">Aucun événement retourné</div>Le service de calendrier n\u2019a rien renvoyé pour la période demandée.</div>'; return; }
-
-    const byDay = {};
-    events.forEach(ev => {
-      const day = (ev.time||ev.date||'').slice(0,10);
-      if(!byDay[day]) byDay[day] = [];
-      byDay[day].push(ev);
-    });
-    const days = Object.keys(byDay).sort();
-    pane.innerHTML = days.map(day => {
-      const dLabel = new Date(day+'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
-      const rows = byDay[day].map(ev => {
-        const dir = calDirection(ev);
-        const dirHtml = dir ? '<span class="cal-dir ' + dir + '">' + (dir==='hausse'?'▲ Haussier':dir==='baisse'?'▼ Baissier':'◆ Mixte') + '</span>' : '<span class="cal-dir mixte">En attente</span>';
-        const impN = ev.impact==='high' ? 3 : ev.impact==='medium' ? 2 : 1;
-        let dots = '<div class="cal-imp">'; for(let i=0;i<3;i++) dots += '<span class="' + (i<impN?'on':'') + '"></span>'; dots += '</div>';
-        const time = (ev.time||'').slice(11,16) || '—';
-        return '<tr><td class="cal-time">' + time + '</td><td>' + (ev.country||'') + '</td><td>' + (ev.event||'') + '<div class="note" style="margin-top:3px;max-width:340px;">' + calImpactNote(ev.event) + '</div></td><td>' + dots + '</td>' +
-          '<td class="cal-values">Préc. ' + (ev.prev??'—') + ' · Prév. ' + (ev.estimate??'—') + (ev.actual!=null?' · Réel ' + ev.actual:'') + '</td><td>' + dirHtml + '</td></tr>';
-      }).join('');
-      return '<div class="cal-day"><h3>' + dLabel + '</h3><table class="cal-table"><thead><tr><th>Heure</th><th>Pays</th><th>Événement</th><th>Import.</th><th>Valeurs</th><th>Impact probable</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-    }).join('');
-  }catch(e){
-    console.error(e);
-    pane.innerHTML = '<div class="cal-empty"><div class="big">Chargement impossible</div>' + (e.message||e) + '<br><br>Si le site est ouvert comme simple fichier (pas encore déployé avec son serveur), c\u2019est normal — cette fonction s\u2019active une fois le backend en ligne (voir la conversation).</div>';
-  }
+  pane.innerHTML =
+    '<div style="height:100%; min-height:620px;">' +
+      '<iframe src="https://widget.mfbcdn.net/widget/calendar.html?lang=en&impacts=1,2,3&symbols=AUD,CAD,CHF,CNY,EUR,GBP,JPY,NZD,USD" ' +
+        'style="border:0; width:100%; height:100%; min-height:620px;" title="Calendrier économique" loading="lazy" allowfullscreen></iframe>' +
+    '</div>' +
+    '<div style="margin-top:10px;">' +
+      '<div style="width:fit-content; margin:auto; font-family:roboto,sans-serif!important; font-size:13px; color:#666666;">' +
+        '<a href="https://www.myfxbook.com/forex-economic-calendar?utm_source=widget13&utm_medium=link&utm_campaign=copyright" title="Economic Calendar" class="myfxbookLink" target="_blank" rel="noopener">' +
+          '<b style="color:#666666">Economic Calendar</b></a> by Myfxbook.com' +
+      '</div>' +
+    '</div>';
 }
 
 function tickClock(){
