@@ -172,6 +172,7 @@
     width:100%; max-height:340px; object-fit:cover; border-radius:var(--radius);
     margin-bottom:16px; border:1px solid var(--line); display:block;
   }
+  .detail-photo-placeholder{ width:100%; min-height:120px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; border:1px dashed var(--line-strong); border-radius:var(--radius); color:var(--muted); font-size:12px; }
   .detail-meta{
     font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
     margin-bottom:26px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;
@@ -950,7 +951,7 @@ function renderDetailFull(article, a){
     '. Niveau de confiance de cette lecture : ' + (a.niveau_confiance==='eleve'?'élevé':a.niveau_confiance==='moyen'?'moyen':'limité') + '.';
 
   pane.innerHTML = '<div class="detail-inner">' + detailHeader(article) +
-    (article.image ? '<img src="' + article.image + '" alt="Illustration de la nouvelle : ' + article.title.replace(/"/g,'&quot;') + '" class="detail-photo" loading="lazy" onerror="this.remove()">' : '') +
+    (article.image ? '<img src="' + article.image + '" alt="Illustration de la nouvelle : ' + article.title.replace(/"/g,'&quot;') + '" class="detail-photo" loading="lazy" onerror="this.remove()">' : '<div id="articleImage" class="detail-photo-placeholder">Recherche de l’image de la source…</div>') +
 
     '<div class="orient-banner ' + orient + '">' +
       '<span class="glyph ' + orient + '">' + ORIENT_GLYPH[orient] + '</span>' +
@@ -989,7 +990,20 @@ function renderDetailFull(article, a){
   '</div>';
   wireDetailBack();
   wireChat(article);
+  if(!article.image) loadArticleImage(article);
   if(tickers.length) loadQuotes(tickers);
+}
+async function loadArticleImage(article){
+  const placeholder = document.getElementById('articleImage');
+  if(!placeholder || !article.link) return;
+  try{
+    const response = await fetch('/api/article-image?url=' + encodeURIComponent(article.link));
+    if(!response.ok) throw new Error('image indisponible');
+    const data = await response.json();
+    if(!data.image) throw new Error('image indisponible');
+    article.image = data.image;
+    placeholder.outerHTML = '<img src="' + data.image + '" alt="Illustration de la nouvelle : ' + article.title.replace(/"/g,'&quot;') + '" class="detail-photo" loading="lazy" onerror="this.remove()">';
+  }catch(e){ placeholder.remove(); }
 }
 async function loadQuotes(tickers){
   tickers.forEach(async (t) => {
