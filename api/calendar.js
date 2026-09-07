@@ -6,19 +6,25 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
+  const apiKey = process.env.FMP_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Clé manquante : la variable d’environnement FMP_API_KEY n’est pas définie dans Vercel. Vérifie le nom exact (FMP_API_KEY) puis redéploie.' });
+  }
+
   try {
     const from = new Date();
     const to = new Date();
     to.setDate(to.getDate() + 6);
     const fmt = (d) => d.toISOString().slice(0, 10);
 
-    const url = 'https://financialmodelingprep.com/api/v3/economic_calendar?from=' +
-      fmt(from) + '&to=' + fmt(to) + '&apikey=' + process.env.FMP_API_KEY;
+    // Endpoint "stable" — l'ancienne route /api/v3/economic_calendar est auth-gated/dépréciée depuis 2025
+    const url = 'https://financialmodelingprep.com/stable/economic-calendar?from=' +
+      fmt(from) + '&to=' + fmt(to) + '&apikey=' + apiKey;
 
     const resp = await fetch(url);
     if (!resp.ok) {
       const txt = await resp.text();
-      return res.status(502).json({ error: 'Erreur FMP', detail: txt });
+      return res.status(502).json({ error: 'Erreur FMP (HTTP ' + resp.status + ')', detail: txt });
     }
     const data = await resp.json();
 
