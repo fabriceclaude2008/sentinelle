@@ -1256,7 +1256,6 @@ function renderCalendar(){
   ).join('') : '<div class="calendar-empty">Aucune annonce ne correspond à ces filtres.</div>';
 
   pane.innerHTML = '<div class="calendar-frame">' +
-    '<div class="calendar-intro"><div><h2>Calendrier économique</h2><p>Les annonces Myfxbook, personnalisées pour Sentinelle.</p></div></div>' +
     '<div class="calendar-tools"><div class="calendar-filters" role="group" aria-label="Filtrer par impact">' + filters + '</div><select class="calendar-range" id="calendarRange" aria-label="Filtrer par période">' + rangeOptions + '</select><select class="calendar-currency" id="calendarCurrency" aria-label="Filtrer par devise">' + currencyOptions + '</select></div>' +
     (selectedEvent ? calendarDetailMarkup(selectedEvent) : '') +
     '<p class="calendar-status">' + filtered.length + ' annonce' + (filtered.length===1?'':'s') + ' affichée' + (filtered.length===1?'':'s') + '</p>' +
