@@ -360,32 +360,6 @@
     .calendar-impact{ grid-column:2; grid-row:2; align-self:start; }
     .calendar-credit{ text-align:center; font-size:10px; }
   }
-  .cal-day{ margin-bottom:26px; }
-  .cal-day h3{
-    font-family:'Fraunces',serif; font-size:16px; font-weight:600; margin:0 0 10px;
-    padding-bottom:8px; border-bottom:1px solid var(--line); text-transform:capitalize;
-  }
-  .cal-table{ width:100%; border-collapse:collapse; font-size:13px; }
-  .cal-table th{
-    text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted);
-    font-weight:500; padding:6px 10px; border-bottom:1px solid var(--line);
-  }
-  .cal-table td{ padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
-  .cal-table tr:hover td{ background:var(--panel); }
-  .cal-time{ font-family:'IBM Plex Mono',monospace; color:var(--muted); white-space:nowrap; }
-  .cal-imp{ display:flex; gap:2px; }
-  .cal-imp span{ width:6px; height:6px; border-radius:50%; background:var(--panel-3); }
-  .cal-imp span.on{ background:var(--brass); }
-  .cal-dir{
-    font-family:'IBM Plex Mono',monospace; font-size:11px; padding:2px 8px; border-radius:3px; white-space:nowrap;
-  }
-  .cal-dir.hausse{ background:rgba(62,142,121,0.15); color:var(--teal-soft); }
-  .cal-dir.baisse{ background:rgba(189,75,60,0.15); color:var(--rust-soft); }
-  .cal-dir.mixte{ background:var(--panel-3); color:var(--muted); }
-  .cal-values{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); white-space:nowrap; }
-  .cal-empty{ text-align:center; padding:60px 20px; color:var(--muted); }
-  .cal-empty .big{ font-family:'Fraunces',serif; font-size:19px; color:var(--text-dim); margin-bottom:10px; }
-  .cal-empty a{ color:var(--brass-soft); }
 
   /* ---- Chat under article ---- */
   .chat-box{ margin-top:10px; border-top:1px solid var(--line); padding-top:22px; }
@@ -418,6 +392,55 @@
   .q-price.up{ color:var(--teal-soft); }
   .q-price.down{ color:var(--rust-soft); }
   .q-pct{ font-size:12px; }
+
+  /* ---- Trading journal ---- */
+  .journal-box{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; }
+  .journal-box h4{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.03em; color:var(--muted); margin:0 0 4px; }
+  .journal-box .jsub{ color:var(--muted); font-size:12.5px; margin-bottom:14px; }
+  .journal-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .journal-btn{
+    flex:1; min-width:130px; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    padding:11px 10px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500;
+  }
+  .journal-btn:hover{ border-color:var(--brass-soft); }
+  .journal-btn.buy{ border-left:3px solid var(--teal); }
+  .journal-btn.sell{ border-left:3px solid var(--rust); }
+  .journal-btn.watch{ border-left:3px solid var(--brass); }
+  .journal-logged{ display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-dim); }
+  .journal-logged .badge{ font-family:'IBM Plex Mono',monospace; font-size:11px; padding:3px 9px; border-radius:3px; background:var(--panel-2); }
+  .journal-logged .badge.achat{ color:var(--teal-soft); }
+  .journal-logged .badge.vente{ color:var(--rust-soft); }
+  .journal-logged .badge.surveillance{ color:var(--brass-soft); }
+
+  .journal-page{ display:none; flex:1; overflow-y:auto; padding:24px 22px 60px; }
+  .journal-page.active{ display:block; }
+  .journal-frame{ max-width:820px; margin:0 auto; }
+  .journal-frame h2{ font-family:'Fraunces',serif; font-size:25px; font-weight:600; margin:0 0 4px; }
+  .journal-frame > p.jintro{ color:var(--muted); font-size:13px; margin:0 0 22px; }
+  .journal-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+  .journal-stats .cell{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:14px 14px; }
+  .journal-stats .cell .n{ font-family:'IBM Plex Mono',monospace; font-size:20px; }
+  .journal-stats .cell .l{ color:var(--muted); font-size:11px; margin-top:2px; }
+  .journal-stats .cell .n.up{ color:var(--teal-soft); }
+  .journal-stats .cell .n.down{ color:var(--rust-soft); }
+  @media (max-width:600px){ .journal-stats{ grid-template-columns:repeat(2,1fr); } }
+  .journal-entry{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--muted); border-radius:var(--radius); padding:16px 18px; margin-bottom:10px; }
+  .journal-entry.achat{ border-left-color:var(--teal); }
+  .journal-entry.vente{ border-left-color:var(--rust); }
+  .journal-entry.surveillance{ border-left-color:var(--brass); }
+  .journal-entry-top{ display:flex; justify-content:space-between; align-items:start; gap:10px; margin-bottom:6px; }
+  .journal-entry-title{ font-family:'Fraunces',serif; font-size:15.5px; font-weight:500; line-height:1.35; }
+  .journal-entry-title a{ color:var(--text); text-decoration:none; }
+  .journal-entry-title a:hover{ text-decoration:underline; }
+  .journal-entry-meta{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); margin-bottom:10px; }
+  .journal-entry-perf{ display:flex; align-items:center; gap:12px; font-size:13px; }
+  .journal-entry-perf .val{ font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .journal-entry-perf .val.up{ color:var(--teal-soft); }
+  .journal-entry-perf .val.down{ color:var(--rust-soft); }
+  .journal-refresh-btn{ background:none; border:1px solid var(--line); color:var(--muted); padding:4px 10px; border-radius:4px; font-size:11.5px; cursor:pointer; }
+  .journal-empty{ text-align:center; padding:60px 20px; color:var(--muted); }
+  .journal-empty .big{ font-family:'Fraunces',serif; font-size:19px; color:var(--text-dim); margin-bottom:8px; }
+  .journal-delete{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:0; }
 </style>
 
 <div class="shell">
@@ -435,6 +458,7 @@
   <div class="pagenav">
     <button class="pagenav-btn active" data-page="news">Actualités</button>
     <button class="pagenav-btn" data-page="calendar">Calendrier économique</button>
+    <button class="pagenav-btn" data-page="journal">Journal</button>
   </div>
 
   <div class="filterbar" id="filterbar"></div>
@@ -450,6 +474,7 @@
   </div>
 
   <div class="calendar-page" id="calendarPage"></div>
+  <div class="journal-page" id="journalPage"></div>
 </div>
 
 <div class="overlay" id="settingsOverlay">
@@ -500,6 +525,10 @@
       <div class="note">Le chat est fourni automatiquement par le serveur du site — aucune connexion requise.</div>
     </div>
 
+    <div class="field-block">
+      <h3>Journal de décision</h3>
+      <div class="note">Enregistré uniquement sur cet appareil (jamais envoyé ailleurs). Tu peux effacer une entrée à tout moment depuis la page Journal.</div>
+    </div>
 
     <div class="field-block">
       <h3>Sur ton iPhone</h3>
@@ -673,8 +702,10 @@ let state = {
   refreshMinutes:3, activeFilter:'all', articles:[], lastRefresh:null,
   selectedId:null, analysisCache:{}, theme:'ardoise', reduceNoise:true,
   page:'news', chatHistories:{}, quoteCache:{}, calendarImpact:'all', calendarCurrency:'all', calendarRange:'week', calendarSelectedId:null,
+  journal:[],
 };
 const STORAGE_KEY = 'sentinelle-settings-v4';
+const JOURNAL_KEY = 'sentinelle-journal-v1';
 
 async function loadState(){
   try{
@@ -683,6 +714,10 @@ async function loadState(){
       const saved = JSON.parse(res.value);
       Object.assign(state, saved, { articles:[], selectedId:null });
     }
+  }catch(e){}
+  try{
+    const res2 = await window.storage.get(JOURNAL_KEY, false);
+    if(res2 && res2.value) state.journal = JSON.parse(res2.value);
   }catch(e){}
 }
 async function saveState(){
@@ -694,6 +729,9 @@ async function saveState(){
       calendarCurrency:state.calendarCurrency, calendarRange:state.calendarRange,
     }), false);
   }catch(e){}
+}
+async function saveJournal(){
+  try{ await window.storage.set(JOURNAL_KEY, JSON.stringify(state.journal.slice(-200)), false); }catch(e){}
 }
 async function cacheAnalysis(id, data){
   state.analysisCache[id] = data;
@@ -918,16 +956,6 @@ function detailHeader(article){
     '<div class="detail-meta"><span>' + (article.source||'Source') + '</span><span>' + timeAgo(article.pubDate) + '</span><a href="' + article.link + '" target="_blank" rel="noopener">Lire la source originale ↗</a></div>';
 }
 
-function renderDetailSkeleton(article){
-  const pane = document.getElementById('detailPane');
-  pane.innerHTML = '<div class="detail-inner">' + detailHeader(article) +
-    '<div class="sk-line" style="width:70%;height:20px;"></div>' +
-    '<div class="sk-line" style="width:100%;"></div><div class="sk-line" style="width:95%;"></div><div class="sk-line" style="width:60%;"></div>' +
-    '<div class="sk-line" style="width:40%;margin-top:20px;"></div>' +
-  '</div>';
-  wireDetailBack();
-}
-
 function confBars(level){
   const n = level==='eleve' ? 3 : level==='moyen' ? 2 : 1;
   let html = '<div class="bars">';
@@ -935,6 +963,55 @@ function confBars(level){
   html += '</div>';
   const lbl = level==='eleve' ? 'Confiance élevée' : level==='moyen' ? 'Confiance moyenne' : 'Confiance limitée';
   return '<div class="confidence">' + html + '<span>' + lbl + ' — information disponible ' + (level==='faible'?'limitée':'suffisante') + '</span></div>';
+}
+
+function findJournalEntry(articleId){
+  return state.journal.find(e => e.articleId===articleId);
+}
+
+function journalWidgetHtml(article, tickers){
+  const existing = findJournalEntry(article.id);
+  if(existing){
+    const label = existing.decision==='achat' ? 'Achat noté' : existing.decision==='vente' ? 'Vente notée' : 'Mise sous surveillance';
+    return '<div class="journal-box"><h4>Journal de décision</h4>' +
+      '<div class="journal-logged"><span class="badge ' + existing.decision + '">' + label + '</span>' +
+      (existing.priceAtDecision!=null ? '<span>à ' + existing.priceAtDecision.toFixed(2) + ' (' + existing.ticker + ')</span>' : '<span>consulté le ' + new Date(existing.date).toLocaleDateString('fr-FR') + '</span>') +
+      '</div></div>';
+  }
+  const tickerNote = tickers.length ? ' pour ' + tickers[0] : '';
+  return '<div class="journal-box"><h4>Journal de décision</h4>' +
+    '<div class="jsub">Note ta réaction à cette nouvelle' + tickerNote + ' — utile plus tard pour voir si c\u2019était une bonne lecture.</div>' +
+    '<div class="journal-actions">' +
+      '<button class="journal-btn buy" data-decision="achat">J\u2019ai acheté</button>' +
+      '<button class="journal-btn sell" data-decision="vente">J\u2019ai vendu</button>' +
+      '<button class="journal-btn watch" data-decision="surveillance">Je surveille</button>' +
+    '</div></div>';
+}
+
+function wireJournalWidget(article, tickers, analysis){
+  const box = document.getElementById('journalBox');
+  if(!box) return;
+  box.querySelectorAll('.journal-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const decision = btn.dataset.decision;
+      const ticker = tickers[0] || null;
+      let price = null;
+      if(ticker){
+        try{
+          const resp = await fetch('/api/quote?symbol=' + encodeURIComponent(ticker));
+          if(resp.ok){ const q = await resp.json(); price = q.price; }
+        }catch(e){}
+      }
+      state.journal.push({
+        articleId: article.id, title: article.title, link: article.link,
+        date: new Date().toISOString(), decision, ticker, priceAtDecision: price,
+        horizon: analysis.horizon, orientation: analysis.orientation,
+      });
+      await saveJournal();
+      box.outerHTML = journalWidgetHtml(article, tickers);
+      wireJournalWidget(article, tickers, analysis);
+    };
+  });
 }
 
 function renderDetailFull(article, a){
@@ -954,7 +1031,7 @@ function renderDetailFull(article, a){
     '. Niveau de confiance de cette lecture : ' + (a.niveau_confiance==='eleve'?'élevé':a.niveau_confiance==='moyen'?'moyen':'limité') + '.';
 
   pane.innerHTML = '<div class="detail-inner">' + detailHeader(article) +
-    (article.image ? '<img src="' + article.image + '" alt="Illustration de la nouvelle : ' + article.title.replace(/"/g,'&quot;') + '" class="detail-photo" loading="lazy" onerror="this.remove()">' : '<div id="articleImage" class="detail-photo-placeholder">Recherche de l’image de la source…</div>') +
+    (article.image ? '<img src="' + article.image + '" alt="Illustration de la nouvelle : ' + article.title.replace(/"/g,'&quot;') + '" class="detail-photo" loading="lazy" onerror="this.remove()">' : '<div id="articleImage" class="detail-photo-placeholder">Recherche de l\u2019image de la source…</div>') +
 
     '<div class="orient-banner ' + orient + '">' +
       '<span class="glyph ' + orient + '">' + ORIENT_GLYPH[orient] + '</span>' +
@@ -965,6 +1042,8 @@ function renderDetailFull(article, a){
     '<div class="section trading-synthese"><h4>Synthèse pour le trading</h4><p>' + synthese + '</p>' +
       (quoteCards ? '<div class="quote-row">' + quoteCards + '</div>' : '') +
     '</div>' +
+
+    '<div class="section" id="journalBox">' + journalWidgetHtml(article, tickers) + '</div>' +
 
     '<div class="section"><h4>Résumé</h4><p>' + a.resume + '</p></div>' +
 
@@ -993,6 +1072,7 @@ function renderDetailFull(article, a){
   '</div>';
   wireDetailBack();
   wireChat(article);
+  wireJournalWidget(article, tickers, a);
   if(!article.image) loadArticleImage(article);
   if(tickers.length) loadQuotes(tickers);
 }
@@ -1143,10 +1223,77 @@ function wireSettings(){
       state.page = btn.dataset.page;
       document.querySelectorAll('.pagenav-btn').forEach(b => b.classList.toggle('active', b===btn));
       const isCal = state.page === 'calendar';
-      document.getElementById('mainArea').style.display = isCal ? 'none' : 'flex';
-      document.getElementById('filterbar').style.display = isCal ? 'none' : 'flex';
+      const isJournal = state.page === 'journal';
+      document.getElementById('mainArea').style.display = (isCal||isJournal) ? 'none' : 'flex';
+      document.getElementById('filterbar').style.display = (isCal||isJournal) ? 'none' : 'flex';
       document.getElementById('calendarPage').classList.toggle('active', isCal);
+      document.getElementById('journalPage').classList.toggle('active', isJournal);
       if(isCal) loadCalendar();
+      if(isJournal) renderJournalPage();
+    };
+  });
+}
+
+// ---------- Journal (page) ----------
+function journalStats(){
+  const total = state.journal.length;
+  const achats = state.journal.filter(e=>e.decision==='achat').length;
+  const ventes = state.journal.filter(e=>e.decision==='vente').length;
+  const surveillance = state.journal.filter(e=>e.decision==='surveillance').length;
+  return { total, achats, ventes, surveillance };
+}
+function renderJournalPage(){
+  const pane = document.getElementById('journalPage');
+  const stats = journalStats();
+  const entries = state.journal.slice().reverse();
+  const list = entries.length ? entries.map((e,revIdx) => {
+    const idx = state.journal.length - 1 - revIdx;
+    const label = e.decision==='achat' ? 'Achat' : e.decision==='vente' ? 'Vente' : 'Surveillance';
+    const safeTicker = (e.ticker||'').replace(/[^A-Za-z0-9]/g,'_');
+    return '<div class="journal-entry ' + e.decision + '">' +
+      '<div class="journal-entry-top"><div class="journal-entry-title"><a href="' + e.link + '" target="_blank" rel="noopener">' + e.title + '</a></div>' +
+      '<button class="journal-delete" data-idx="' + idx + '" title="Supprimer">✕</button></div>' +
+      '<div class="journal-entry-meta">' + label + (e.ticker ? ' · ' + e.ticker : '') + ' · ' + new Date(e.date).toLocaleDateString('fr-FR') + ' ' + new Date(e.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) + '</div>' +
+      (e.ticker && e.priceAtDecision!=null
+        ? '<div class="journal-entry-perf" id="perf-' + idx + '"><span>Prix noté : ' + e.priceAtDecision.toFixed(2) + '</span><button class="journal-refresh-btn" data-refresh-idx="' + idx + '" data-ticker="' + e.ticker + '" data-price="' + e.priceAtDecision + '" data-decision="' + e.decision + '">Voir la performance depuis</button></div>'
+        : '') +
+    '</div>';
+  }).join('') : '<div class="journal-empty"><div class="big">Ton journal est vide</div>Depuis n\u2019importe quelle nouvelle, note ta réaction (achat / vente / surveillance) — tu pourras revenir voir plus tard si c\u2019était une bonne lecture.</div>';
+
+  pane.innerHTML = '<div class="journal-frame"><h2>Journal de décision</h2>' +
+    '<p class="jintro">Chaque grand investisseur tient un journal de ses décisions pour apprendre de ses réactions. Voici le tien.</p>' +
+    '<div class="journal-stats">' +
+      '<div class="cell"><div class="n">' + stats.total + '</div><div class="l">Décisions notées</div></div>' +
+      '<div class="cell"><div class="n up">' + stats.achats + '</div><div class="l">Achats</div></div>' +
+      '<div class="cell"><div class="n down">' + stats.ventes + '</div><div class="l">Ventes</div></div>' +
+      '<div class="cell"><div class="n">' + stats.surveillance + '</div><div class="l">Surveillance</div></div>' +
+    '</div>' +
+    list +
+  '</div>';
+
+  pane.querySelectorAll('.journal-delete').forEach(btn => {
+    btn.onclick = async () => {
+      state.journal.splice(parseInt(btn.dataset.idx), 1);
+      await saveJournal();
+      renderJournalPage();
+    };
+  });
+  pane.querySelectorAll('[data-refresh-idx]').forEach(btn => {
+    btn.onclick = async () => {
+      const ticker = btn.dataset.ticker;
+      const priceThen = parseFloat(btn.dataset.price);
+      const decision = btn.dataset.decision;
+      btn.textContent = 'Chargement…';
+      try{
+        const resp = await fetch('/api/quote?symbol=' + encodeURIComponent(ticker));
+        const q = await resp.json();
+        if(q.price==null) throw new Error();
+        const pctChange = ((q.price - priceThen) / priceThen) * 100;
+        const favorable = decision==='achat' ? pctChange>=0 : decision==='vente' ? pctChange<=0 : null;
+        const cls = favorable===null ? '' : favorable ? 'up' : 'down';
+        const wrap = document.getElementById('perf-' + btn.dataset.refreshIdx);
+        wrap.innerHTML = '<span>Prix noté : ' + priceThen.toFixed(2) + '</span><span>Actuel : ' + q.price.toFixed(2) + '</span><span class="val ' + cls + '">' + (pctChange>=0?'+':'') + pctChange.toFixed(2) + '%</span>';
+      }catch(e){ btn.textContent = 'Indisponible'; }
     };
   });
 }
@@ -1160,7 +1307,7 @@ const CALENDAR_IMPACTS = [
   { id:'medium', label:'Moyen' },
 ];
 const CALENDAR_RANGES = [
-  { id:'today', label:"Aujourd’hui" },
+  { id:'today', label:"Aujourd\u2019hui" },
   { id:'tomorrow', label:'Demain' },
   { id:'week', label:'Cette semaine' },
   { id:'all', label:'Toutes les dates' },
@@ -1172,10 +1319,6 @@ function calendarEscape(value){
 function calendarDate(value){
   const date = new Date(value);
   return isNaN(date) ? 'Date inconnue' : date.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' }) + '<br>' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-}
-function calendarDayKey(value){
-  const date = new Date(value);
-  return isNaN(date) ? '' : date.toLocaleDateString('en-CA');
 }
 function calendarRangeIncludes(value, range){
   if(range==='all') return true;
@@ -1193,19 +1336,19 @@ function calendarImpactLabel(id){ return id==='high' ? 'Fort' : id==='medium' ? 
 function calendarDefinition(eventName){
   const name = (eventName||'').toLowerCase();
   const definitions = [
-    { terms:['cpi','inflation','consumer price'], text:'Mesure l’évolution des prix payés par les ménages. Une inflation plus élevée que prévu peut renforcer les attentes de taux élevés et peser sur les actifs risqués.' },
-    { terms:['ppi','producer price'], text:'Mesure l’évolution des prix reçus par les producteurs. Elle donne un signal précoce sur les pressions de coûts qui peuvent ensuite se transmettre aux prix à la consommation.' },
-    { terms:['non-farm','nonfarm','payroll','emploi non agricole'], text:'Mesure les créations d’emplois hors secteur agricole. C’est un indicateur majeur de la vigueur du marché du travail et des futures décisions de banque centrale.' },
+    { terms:['cpi','inflation','consumer price'], text:'Mesure l\u2019évolution des prix payés par les ménages. Une inflation plus élevée que prévu peut renforcer les attentes de taux élevés et peser sur les actifs risqués.' },
+    { terms:['ppi','producer price'], text:'Mesure l\u2019évolution des prix reçus par les producteurs. Elle donne un signal précoce sur les pressions de coûts qui peuvent ensuite se transmettre aux prix à la consommation.' },
+    { terms:['non-farm','nonfarm','payroll','emploi non agricole'], text:'Mesure les créations d\u2019emplois hors secteur agricole. C\u2019est un indicateur majeur de la vigueur du marché du travail et des futures décisions de banque centrale.' },
     { terms:['unemployment','chômage'], text:'Mesure la part de la population active sans emploi. Une hausse persistante signale généralement un ralentissement du marché du travail.' },
-    { terms:['pmi','manufacturing','services pmi'], text:'Sondage auprès des entreprises sur leur activité. Un niveau supérieur à 50 indique généralement une expansion, tandis qu’un niveau inférieur indique une contraction.' },
+    { terms:['pmi','manufacturing','services pmi'], text:'Sondage auprès des entreprises sur leur activité. Un niveau supérieur à 50 indique généralement une expansion, tandis qu\u2019un niveau inférieur indique une contraction.' },
     { terms:['retail sales','ventes au détail'], text:'Mesure les dépenses des consommateurs dans le commerce de détail. Elle renseigne sur la demande intérieure et la résistance de la consommation.' },
-    { terms:['gdp','pib','gross domestic'], text:'Mesure la production totale de biens et services d’une économie. C’est l’un des principaux indicateurs de croissance, mais il est publié avec retard.' },
-    { terms:['interest rate','taux directeur','rate decision','fed funds'], text:'Annonce le niveau du taux directeur d’une banque centrale. Il influence le coût du crédit, les valorisations et les anticipations de marché.' },
+    { terms:['gdp','pib','gross domestic'], text:'Mesure la production totale de biens et services d\u2019une économie. C\u2019est l\u2019un des principaux indicateurs de croissance, mais il est publié avec retard.' },
+    { terms:['interest rate','taux directeur','rate decision','fed funds'], text:'Annonce le niveau du taux directeur d\u2019une banque centrale. Il influence le coût du crédit, les valorisations et les anticipations de marché.' },
     { terms:['consumer confidence','confiance des consommateurs'], text:'Mesure le moral des ménages et leurs intentions de consommation. Elle aide à évaluer la solidité de la demande future.' },
-    { terms:['job ads','offres d’emploi'], text:'Suit le volume d’offres d’emploi publiées. Il s’agit d’un signal avancé de la demande de main-d’œuvre, à interpréter avec les autres indicateurs d’emploi.' },
+    { terms:['job ads','offres d\u2019emploi'], text:'Suit le volume d\u2019offres d\u2019emploi publiées. Il s\u2019agit d\u2019un signal avancé de la demande de main-d\u2019œuvre, à interpréter avec les autres indicateurs d\u2019emploi.' },
   ];
   const match = definitions.find(definition => definition.terms.some(term => name.indexOf(term)!==-1));
-  return match ? match.text : 'Cet indicateur fournit une information chiffrée sur l’activité économique ou les conditions financières. Le marché compare surtout le résultat publié avec la prévision et la valeur précédente.';
+  return match ? match.text : 'Cet indicateur fournit une information chiffrée sur l\u2019activité économique ou les conditions financières. Le marché compare surtout le résultat publié avec la prévision et la valeur précédente.';
 }
 function calendarNumber(value){ return typeof value==='number' && Number.isFinite(value) ? value : null; }
 function calendarChartMarkup(event, points){
@@ -1224,8 +1367,8 @@ function calendarChartMarkup(event, points){
     '<table class="calendar-history"><thead><tr><th>Date</th><th>Réel</th><th>Prévision</th><th>Précédent</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 function calendarDetailMarkup(event){
-  const chart = calendarChartError ? '<p class="calendar-chart-note">' + calendarEscape(calendarChartError) + '</p>' : calendarChartPoints ? calendarChartMarkup(event, calendarChartPoints) : '<p class="calendar-chart-note">Chargement de l’historique Myfxbook…</p>';
-  return '<section class="calendar-detail" aria-label="Détails de l’annonce"><div class="calendar-detail-head"><div><h3>' + calendarEscape(event.event) + '</h3><p class="calendar-status">' + calendarEscape(event.currency) + ' · ' + calendarDate(event.date) + '</p></div><button class="calendar-detail-close" type="button" id="closeCalendarDetail" aria-label="Fermer les détails">×</button></div>' + chart + '<div class="calendar-definition"><strong>Ce que mesure cette annonce</strong>' + calendarEscape(calendarDefinition(event.event)) + '</div></section>';
+  const chart = calendarChartError ? '<p class="calendar-chart-note">' + calendarEscape(calendarChartError) + '</p>' : calendarChartPoints ? calendarChartMarkup(event, calendarChartPoints) : '<p class="calendar-chart-note">Chargement de l\u2019historique Myfxbook…</p>';
+  return '<section class="calendar-detail" aria-label="Détails de l\u2019annonce"><div class="calendar-detail-head"><div><h3>' + calendarEscape(event.event) + '</h3><p class="calendar-status">' + calendarEscape(event.currency) + ' · ' + calendarDate(event.date) + '</p></div><button class="calendar-detail-close" type="button" id="closeCalendarDetail" aria-label="Fermer les détails">×</button></div>' + chart + '<div class="calendar-definition"><strong>Ce que mesure cette annonce</strong>' + calendarEscape(calendarDefinition(event.event)) + '</div></section>';
 }
 
 function renderCalendar(){
